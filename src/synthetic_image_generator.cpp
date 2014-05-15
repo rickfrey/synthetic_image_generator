@@ -9,6 +9,39 @@
 #include <vtkCamera.h>
 #include <vtkWindowToImageFilter.h>
 #include <vtkPNGWriter.h>
+
+//TEST
+#include "vtkRotationalExtrusionFilter.h"
+#include "vtkSphereSource.h"
+#include "vtkTransform.h"
+#include "vtkTransformFilter.h"
+#include "vtkTransformPolyDataFilter.h"
+#include "vtkWarpTo.h"
+#include "vtkAppendFilter.h"
+#include "vtkCellArray.h"
+#include "vtkConeSource.h"
+#include "vtkContourFilter.h"
+#include "vtkCubeSource.h"
+#include "vtkDataSetMapper.h"
+#include "vtkImplicitModeller.h"
+#include "vtkLODActor.h"
+#include "vtkPoints.h"
+#include "vtkPolyData.h"
+#include "vtkPolyDataMapper.h"
+#include "vtkRenderWindow.h"
+#include "vtkRenderWindowInteractor.h"
+#include "vtkRenderer.h"
+#include "vtkRotationalExtrusionFilter.h"
+#include "vtkSphereSource.h"
+#include "vtkTransform.h"
+#include "vtkTransformFilter.h"
+#include "vtkTransformPolyDataFilter.h"
+#include "vtkWarpTo.h"
+#include "vtkTextActor.h"
+#include "vtkTextProperty.h"
+
+#include "vtkProperty.h"
+#include "vtkCamera.h"
  
 int main ( int argc, char *argv[] )
 {
@@ -37,8 +70,12 @@ int main ( int argc, char *argv[] )
 
   //TEST!!!///////////////////////////
   vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New(); // vtkCamera is a virtual camera for 3D rendering
-  camera->SetPosition(0,0,10);
+  camera->SetPosition(-10,0,5);
   camera->SetFocalPoint(0,0,0);
+  camera->SetRoll(90);
+  //camera->Roll(90);
+  //camera->Azimuth(40);
+  //camera->Elevation(30);
   ///////////////////////////////////
 
   vtkSmartPointer<vtkRenderer> renderer =
@@ -68,12 +105,13 @@ int main ( int argc, char *argv[] )
 
   //TEST!!!///////////////////
   vtkSmartPointer<vtkWindowToImageFilter> ImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
-  ImageFilter->SetInput(renderWindow);  // vtkWindowToImageFilter provides methods needed to read the data in
+  ImageFilter->SetInput(renderer->GetActiveCamera()->Get);  // vtkWindowToImageFilter provides methods needed to read the data in
                                         // a vtkWindow and use it as input to the imaging pipeline. This is
                                         // useful for saving an image to a file for example
   vtkSmartPointer<vtkPNGWriter> pngWriter = vtkSmartPointer<vtkPNGWriter>::New(); // Writes PNG files
   pngWriter->SetFileName("output.png");
   pngWriter->SetInput(ImageFilter->GetOutput());
+  pngWriter->Update();
   pngWriter->Write();
   ////////////////////////////
 
