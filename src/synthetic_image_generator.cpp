@@ -70,9 +70,12 @@ int main ( int argc, char *argv[] )
 
   //TEST!!!///////////////////////////
   vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New(); // vtkCamera is a virtual camera for 3D rendering
-  camera->SetPosition(-10,0,5);
+  camera->SetPosition(-1.9,0,0);//EINHEIT: m!!! // bei x=-2.44 kommt hintere schräge Bande
   camera->SetFocalPoint(0,0,0);
   camera->SetRoll(90);
+  camera->Pitch(-10);
+  camera->Yaw(0);
+  camera->SetViewAngle(45);
   //camera->Roll(90);
   //camera->Azimuth(40);
   //camera->Elevation(30);
@@ -91,11 +94,11 @@ int main ( int argc, char *argv[] )
     vtkSmartPointer<vtkRenderWindow>::New(); // create a window for renderers to draw into
   renderWindow->AddRenderer(renderer);
   //TEST///
-  //renderWindow->SetSize(600,400);
+  renderWindow->SetSize(600,800);
   /////////
 
   vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
-    vtkSmartPointer<vtkRenderWindowInteractor>::New(); // Ermöglichst Interaktion mit Maus/ Tastatur
+    vtkSmartPointer<vtkRenderWindowInteractor>::New(); // Ermöglicht Interaktion mit Maus/ Tastatur
   renderWindowInteractor->SetRenderWindow(renderWindow);
  
   renderer->AddActor(actor);
