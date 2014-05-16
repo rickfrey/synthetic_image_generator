@@ -105,7 +105,7 @@ int main ( int argc, char *argv[] )
 
   //TEST!!!///////////////////
   vtkSmartPointer<vtkWindowToImageFilter> ImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
-  ImageFilter->SetInput(renderer->GetActiveCamera()->Get);  // vtkWindowToImageFilter provides methods needed to read the data in
+  ImageFilter->SetInput(renderWindow);  // vtkWindowToImageFilter provides methods needed to read the data in
                                         // a vtkWindow and use it as input to the imaging pipeline. This is
                                         // useful for saving an image to a file for example
   vtkSmartPointer<vtkPNGWriter> pngWriter = vtkSmartPointer<vtkPNGWriter>::New(); // Writes PNG files
