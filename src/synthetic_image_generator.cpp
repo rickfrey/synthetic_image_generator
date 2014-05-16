@@ -95,7 +95,7 @@ int main ( int argc, char *argv[] )
     vtkSmartPointer<vtkRenderWindow>::New(); // create a window for renderers to draw into
   renderWindow->AddRenderer(renderer);
   //TEST///
-  renderWindow->SetSize(1200,1900);
+  renderWindow->SetSize(1200,1900); // Wenn auskommentiert wird die Karte perfekt auf den Bildschirm gerendert aber output.png ist schwarz?!?!?!?!?!!
   /////////
 
   vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
