@@ -71,9 +71,10 @@ int main ( int argc, char *argv[] )
   //TEST!!!///////////////////////////
   vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New(); // vtkCamera is a virtual camera for 3D rendering
   camera->SetPosition(-1.9,0,0);//EINHEIT: m!!! // bei x=-2.44 kommt hintere schräge Bande
-  camera->SetFocalPoint(0,0,0);
+  camera->SetFocalPoint(0,0,0);     // Anschließend: Position und FocalPoint müssen in jeder Schleife neu gesetzt werden, zusätzlich Schleife für
+                                    // jede Position: alle Pitch- und Yaw-Winkel durchfotografieren
   camera->SetRoll(90);
-  camera->Pitch(-10);
+  camera->Pitch(0);
   camera->Yaw(0);
   camera->SetViewAngle(45);
   //camera->Roll(90);
@@ -94,7 +95,7 @@ int main ( int argc, char *argv[] )
     vtkSmartPointer<vtkRenderWindow>::New(); // create a window for renderers to draw into
   renderWindow->AddRenderer(renderer);
   //TEST///
-  renderWindow->SetSize(600,800);
+  renderWindow->SetSize(1200,1900);
   /////////
 
   vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
