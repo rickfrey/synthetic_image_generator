@@ -70,11 +70,11 @@ int main ( int argc, char *argv[] )
 
   //TEST!!!///////////////////////////
   vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New(); // vtkCamera is a virtual camera for 3D rendering
-  camera->SetPosition(-1.9,0,0);//EINHEIT: m!!! // bei x=-2.44 kommt hintere schräge Bande
+  camera->SetPosition(-1.9,0,1.5);//EINHEIT: m!!! // bei x=-2.44 kommt hintere schräge Bande
   camera->SetFocalPoint(0,0,0);     // Anschließend: Position und FocalPoint müssen in jeder Schleife neu gesetzt werden, zusätzlich Schleife für
                                     // jede Position: alle Pitch- und Yaw-Winkel durchfotografieren
   camera->SetRoll(90);
-  camera->Pitch(0);
+  camera->Pitch(10);
   camera->Yaw(0);
   camera->SetViewAngle(45);
   //camera->Roll(90);
@@ -95,15 +95,18 @@ int main ( int argc, char *argv[] )
     vtkSmartPointer<vtkRenderWindow>::New(); // create a window for renderers to draw into
   renderWindow->AddRenderer(renderer);
   //TEST///
-  renderWindow->SetSize(1200,1900); // Wenn auskommentiert wird die Karte perfekt auf den Bildschirm gerendert aber output.png ist schwarz?!?!?!?!?!!
+  //std::cout<<renderWindow->GetSize()<<std::endl;
+  renderWindow->SetSize(1920,1080); // Wenn auskommentiert wird die Karte perfekt auf den Bildschirm gerendert aber output.png ist schwarz?!?!?!?!?!!
+  std::cout<<"blub"<<renderWindow->GetSize()[0]<<"blub"<<renderWindow->GetSize()[1]<<std::endl;
+
   /////////
 
   vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
     vtkSmartPointer<vtkRenderWindowInteractor>::New(); // Ermöglicht Interaktion mit Maus/ Tastatur
   renderWindowInteractor->SetRenderWindow(renderWindow);
- 
+
   renderer->AddActor(actor);
-  renderer->SetBackground(.3, .6, .3); // Background color green
+  renderer->SetBackground(0.3, 0.6, 0.3); // Background color green
  
   renderWindow->Render();
 
@@ -112,6 +115,9 @@ int main ( int argc, char *argv[] )
   ImageFilter->SetInput(renderWindow);  // vtkWindowToImageFilter provides methods needed to read the data in
                                         // a vtkWindow and use it as input to the imaging pipeline. This is
                                         // useful for saving an image to a file for example
+  ImageFilter->SetMagnification(1);
+  ImageFilter->Update();
+
   vtkSmartPointer<vtkPNGWriter> pngWriter = vtkSmartPointer<vtkPNGWriter>::New(); // Writes PNG files
   pngWriter->SetFileName("output.png");
   pngWriter->SetInput(ImageFilter->GetOutput());
