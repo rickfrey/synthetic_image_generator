@@ -76,7 +76,7 @@ int main ( int argc, char *argv[] )
   camera->SetRoll(90);
   camera->Pitch(10);
   camera->Yaw(0);
-  camera->SetViewAngle(30); // Der Angle of View der realen Kamera kann über Focal length und Sensorgröße ausgerechnet werden (Wikipedia)!!!
+  camera->SetViewAngle(63.1); // Der Angle of View der realen Kamera kann über Focal length und Sensorgröße ausgerechnet werden (Wikipedia)!!!
   //camera->Roll(90);
   //camera->Azimuth(40);
   //camera->Elevation(30);
@@ -96,7 +96,7 @@ int main ( int argc, char *argv[] )
   renderWindow->AddRenderer(renderer);
   //TEST///
   //std::cout<<renderWindow->GetSize()<<std::endl;
-  renderWindow->SetSize(900,600); // Wenn auskommentiert wird die Karte perfekt auf den Bildschirm gerendert aber output.png ist schwarz?!?!?!?!?!!
+  renderWindow->SetSize(400,533); // Wenn auskommentiert wird die Karte perfekt auf den Bildschirm gerendert aber output.png ist schwarz?!?!?!?!?!!
   std::cout<<"blub"<<renderWindow->GetSize()[0]<<"blub"<<renderWindow->GetSize()[1]<<std::endl;
 
   /////////
