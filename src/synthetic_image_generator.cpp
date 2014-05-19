@@ -39,10 +39,66 @@
 #include "vtkWarpTo.h"
 #include "vtkTextActor.h"
 #include "vtkTextProperty.h"
+#include "vtkAxesActor.h"
+#include "vtkAxes.h"
+#include <vtkPropPicker.h>
+#include <vtkObjectFactory.h>
+#include <vtkInteractorStyleTrackballCamera.h>
 
 #include "vtkProperty.h"
 #include "vtkCamera.h"
  
+
+// Handle mouse events
+class MouseInteractorStyle2 : public vtkInteractorStyleTrackballCamera
+{
+  public:
+    static MouseInteractorStyle2* New();
+    vtkTypeMacro(MouseInteractorStyle2, vtkInteractorStyleTrackballCamera);
+
+    virtual void OnLeftButtonDown()
+    {
+      int* clickPos = this->GetInteractor()->GetEventPosition();
+
+      // Pick from this location.
+      vtkSmartPointer<vtkPropPicker>  picker =
+        vtkSmartPointer<vtkPropPicker>::New();
+      picker->Pick(clickPos[0], clickPos[1], 0, this->GetDefaultRenderer());
+
+      double* pos = picker->GetPickPosition();
+      std::cout << "Pick position (world coordinates) is: "
+                << pos[0] << " " << pos[1]
+                << " " << pos[2] << std::endl;
+
+      std::cout << "Picked actor: " << picker->GetActor() << std::endl;
+      //Create a sphere
+      vtkSmartPointer<vtkSphereSource> sphereSource =
+        vtkSmartPointer<vtkSphereSource>::New();
+      sphereSource->SetCenter(pos[0], pos[1], pos[2]);
+      sphereSource->SetRadius(0.1);
+
+      //Create a mapper and actor
+      vtkSmartPointer<vtkPolyDataMapper> mapper =
+        vtkSmartPointer<vtkPolyDataMapper>::New();
+      mapper->SetInputConnection(sphereSource->GetOutputPort());
+
+      vtkSmartPointer<vtkActor> actor =
+        vtkSmartPointer<vtkActor>::New();
+      actor->SetMapper(mapper);
+
+
+      //this->GetInteractor()->GetRenderWindow()->GetRenderers()->GetDefaultRenderer()->AddActor(actor);
+      this->GetDefaultRenderer()->AddActor(actor);
+      // Forward events
+      vtkInteractorStyleTrackballCamera::OnLeftButtonDown();
+    }
+
+  private:
+
+};
+
+vtkStandardNewMacro(MouseInteractorStyle2);
+
 int main ( int argc, char *argv[] )
 {
   if ( argc != 2 )
@@ -100,15 +156,26 @@ int main ( int argc, char *argv[] )
   std::cout<<"blub"<<renderWindow->GetSize()[0]<<"blub"<<renderWindow->GetSize()[1]<<std::endl;
 
   /////////
+  vtkSmartPointer<MouseInteractorStyle2> style =
+      vtkSmartPointer<MouseInteractorStyle2>::New();
+    style->SetDefaultRenderer(renderer);
 
   vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
     vtkSmartPointer<vtkRenderWindowInteractor>::New(); // Ermöglicht Interaktion mit Maus/ Tastatur
   renderWindowInteractor->SetRenderWindow(renderWindow);
+  renderWindowInteractor->SetInteractorStyle(style);
 
   renderer->AddActor(actor);
   renderer->SetBackground(0.3, 0.6, 0.3); // Background color green
  
   renderWindow->Render();
+
+  //Add Axes
+
+  vtkSmartPointer<vtkAxesActor> axes = vtkSmartPointer<vtkAxesActor>::New();
+    axes->SetOrigin(0.,0.,0.);
+    renderer->AddViewProp( axes );
+
 
   //TEST!!!///////////////////
   vtkSmartPointer<vtkWindowToImageFilter> ImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
