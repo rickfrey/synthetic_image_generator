@@ -127,6 +127,9 @@ int main ( int argc, char *argv[] )
 
   renderWindowInteractor->Start();
 
- 
+  ////OFFSCREEN RENDERING: VTK_OPENGL_HAS_OSMESA im advanced-build-modus einschalten!
+  ////Fehlermeldung: "[VTK] GL/osmesa.h: no such file or directory"
+  //// http://tips.enderunix.org/view.php?id=2338&lang=en (in order to install vtk without getting this error, libosmesa-dev must be installed. for instance, issue "sudo apt-get install libosmesa6-dev" on ubuntu)
+ ///// TROTZDEM FEHLER!!!
   return EXIT_SUCCESS;
 }
