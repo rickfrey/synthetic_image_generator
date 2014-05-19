@@ -7,8 +7,4 @@ include(${VTK_USE_FILE})
 add_executable(synthetic_image_generator src/synthetic_image_generator.cpp)
 
 
-if(VKT_LIBRARIES)
-  target_link_libraries(synthetic_image_generator ${VTK_LIBRARIES})
-else()
-  target_link_libraries(synthetic_image_generator vtkHybrid)
-endif()
+target_link_libraries(synthetic_image_generator ${VTK_LIBRARIES})
