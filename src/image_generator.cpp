@@ -70,7 +70,7 @@ int main (int argc, char *argv[])
     // Camera
     vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New();
     camera->SetPosition(-i,0,1.5);
-    camera->SetFocalPoint(0,0,0);
+    camera->SetFocalPoint(x+1,0,0);
     camera->SetRoll(90);
     camera->Pitch(10);
     camera->Yaw(0);
