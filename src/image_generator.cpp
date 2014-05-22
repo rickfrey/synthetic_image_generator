@@ -18,6 +18,7 @@
 #include <vtkSTLReader.h>
 #include <math.h>
 #include <sstream>
+#include <vtkLight.h>
 
 int main (int argc, char *argv[])
 {
@@ -34,11 +35,10 @@ int main (int argc, char *argv[])
         vtkSmartPointer<vtkSTLReader>::New();
       reader->SetFileName(inputFilename.c_str());
       reader->Update();
-      float x; //x-Koordinate
-      float y; //y-Koordinate
-      x=0.0;
-      y=0.0;
-      for (int i=0;i<5;i++)
+
+      for (float y=0.0;y<=4;y+=0.5) // Schleife über alle y-Werte
+      {
+      for (float x=0.0;x<=5.6;x+=0.5)// Schleife über alle x-Werte
       {
     //Visualize
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
@@ -69,14 +69,21 @@ int main (int argc, char *argv[])
 
     // Camera
     vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New();
-    camera->SetPosition(-i,0,1.5);
-    camera->SetFocalPoint(x+1,0,0);
+    camera->SetPosition(x,y,0.5);
+    camera->SetFocalPoint(x+1,y,0.5);
     camera->SetRoll(90);
-    camera->Pitch(10);
+    camera->Pitch(0);
     camera->Yaw(0);
     camera->SetViewAngle(63.1);
 
     renderer->SetActiveCamera(camera);
+
+    vtkSmartPointer<vtkLight> light = vtkSmartPointer<vtkLight>::New();
+    light->SetPosition(4,3,1);
+    light->SetFocalPoint(4,3,0);
+    light->SetConeAngle(180);
+    light->SetIntensity(1);
+    renderer->AddLight(light);
 
     renderWindow->Render();
 
@@ -84,13 +91,11 @@ int main (int argc, char *argv[])
     windowToImageFilter->Update();
 
     std::stringstream ss;
-    ss << "pos_"<< i << ".png";
+    ss << "pos_"<< x << "_" << y << ".png";
     writer->SetFileName(ss.str().c_str());//aus stringstream wird string und anschl. constant string gemacht
     writer->SetInputConnection(windowToImageFilter->GetOutputPort());
     writer->Write();
-    std::cout<<i<<std::endl;
-
-    //x= x + 0.3;
+}
 }
     return 0;
 }
