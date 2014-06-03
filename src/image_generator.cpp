@@ -96,6 +96,7 @@ int main (int argc, char *argv[])
     windowToImageFilter->Update();
 
     //Convert VTKImageData to iplimage (OpenCV)
+    // http://vtk.1045678.n5.nabble.com/From-vtkImageData-to-Iplimage-OpenCV-td5716020.html
     vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
     image = windowToImageFilter->GetOutput();
     //check number of components
