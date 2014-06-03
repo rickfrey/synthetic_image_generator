@@ -20,6 +20,9 @@
 #include <sstream>
 #include <vtkLight.h>
 
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
 int main (int argc, char *argv[])
 {
     {
@@ -35,11 +38,13 @@ int main (int argc, char *argv[])
         vtkSmartPointer<vtkSTLReader>::New();
       reader->SetFileName(inputFilename.c_str());
       reader->Update();
-
+/*
       for (float y=0.0;y<=4;y+=0.5) // Schleife über alle y-Werte
       {
       for (float x=0.0;x<=5.6;x+=0.5)// Schleife über alle x-Werte
       {
+      */
+      int x=1,y=0,z=0;
     //Visualize
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(reader->GetOutputPort());
@@ -90,13 +95,31 @@ int main (int argc, char *argv[])
     windowToImageFilter->SetInput(renderWindow);
     windowToImageFilter->Update();
 
+    //Convert VTKImageData to iplimage (OpenCV)
+    vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
+    image = windowToImageFilter->GetOutput();
+    //check number of components
+    const int numComponents = image->GetNumberOfScalarComponents();
+    //Construct the OpenCV Mat
+    int dims[3];
+    image->GetDimensions(dims);
+    cv::Mat openCVImage(dims[0],dims[1],CV_8UC3, image->GetScalarPointer());
+    cv::cvtColor(openCVImage,openCVImage,CV_BGRA2GRAY);// Wenn auskommentiert verändert sich auch VTK-BILD?!?!?!
+    //Flip because of different origins between vtk and OpenCV
+    cv::flip(openCVImage,openCVImage,0);
+    cv::imshow("Testbild",openCVImage);
+    cv::imwrite("TEST_OPENCV.jpg",openCVImage);
+
+
     std::stringstream ss;
     ss << "pos_"<< x << "_" << y << ".png";
     writer->SetFileName(ss.str().c_str());//aus stringstream wird string und anschl. constant string gemacht
     writer->SetInputConnection(windowToImageFilter->GetOutputPort());
     writer->Write();
+    /*
 }
 }
+*/
     return 0;
 }
 }
