@@ -49,7 +49,7 @@ int main (int argc, char *argv[])
       for (float x=0.0;x<=5.6;x+=0.5)// Schleife über alle x-Werte
       {
       */
-      int x=0,y=0,z=0;
+      float x=1,y=2.5,z=0;
     //Visualize
     vtkSmartPointer<vtkPolyDataMapper> mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
     mapper->SetInputConnection(reader->GetOutputPort());
@@ -63,7 +63,7 @@ int main (int argc, char *argv[])
     vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
     renderWindow->SetOffScreenRendering(1);
 
-    renderWindow->SetSize(400,533);
+    renderWindow->SetSize(1200,1599);//Ursprünglich: 400,533
     renderWindow->AddRenderer(renderer);
 
     // add the actors to the scene
@@ -131,32 +131,40 @@ int main (int argc, char *argv[])
     cv::cvtColor(dst,cdst,CV_GRAY2BGR);
 
     cv::Point Mittelpunkt;
-    int Gegenkathete, Ankathete, Theta;
+    float Gegenkathete, Ankathete, Theta, laenge;
     std::ofstream myfile;//Eigenschaften in Textdatei schreiben
     myfile.open("Eigenschaften.txt");
-    myfile<<"X-Pos: "<<x<<" Y-Pos: "<<y<<" Z-Pos: "<<z<<std::endl;
+    myfile<<"X-Pos: "<<x<<" Y-Pos: "<<y<<" Z-Pos: "<<z<< "; Roll, Pitch, Yaw" <<std::endl;
     std::vector<Vec4i> lines;
-      HoughLinesP(dst, lines, 1, CV_PI/180, 30, 50, 10 );
+      HoughLinesP(dst, lines, 1, CV_PI/360, 90, 30, 50 );
       for( size_t i = 0; i < lines.size(); i++ )
       {
         Vec4i l = lines[i];
         line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 1, CV_AA);
         //Eigenschaften berechnen:
-        Mittelpunkt.x=cvRound((l[0]+l[2])/2);
-        Mittelpunkt.y=cvRound((l[1]+l[3])/2);
-        cv:circle(cdst,Mittelpunkt,5,Scalar(0,255,0),2,CV_AA);
-        Gegenkathete=cvRound(abs(l[1]-l[3]));
-        Ankathete=cvRound(abs(l[0]-l[2]));
-        Theta=atan(Gegenkathete/Ankathete);
-        Theta=CV_PI/2-Theta;
-        //HIER WEITERMACHEN UND alpha, theta und Länge berechnen, anschließend in Textdatei schreiben!!
-        //
-        //
-        //
-        myfile<<"Mittelpunkt "<<i<<": "<<Mittelpunkt.x<<", "<<Mittelpunkt.y<<";"<<std::endl;
+        Mittelpunkt.x=cvRound((l[0]+l[2])/2);//Berechnung x-Koordinate des Mittelpunkts
+        Mittelpunkt.y=cvRound((l[1]+l[3])/2);//  ""       y-koordinate
+        cv::circle(cdst,Mittelpunkt,5,Scalar(0,255,0),2,CV_AA);
+        Gegenkathete=((l[1]-l[3]));
+        Ankathete=((l[2]-l[0]));
+        std::cout<<l[0]<<","<<l[1]<<","<<l[2]<<","<<l[3]<<std::endl;
+        Theta=atan(Gegenkathete/Ankathete)*360/(2*CV_PI);
+        //Theta=(CV_PI/2-Theta)*360/(2*CV_PI);
+        laenge=cvRound(sqrt(Ankathete*Ankathete+Gegenkathete*Gegenkathete));
 
+        myfile<<"Mittelpunkt "<<i<<": "<<Mittelpunkt.x<<", "<<Mittelpunkt.y<<"; Theta: " << Theta << "; Länge: " << laenge << ";" <<std::endl;
       }
-
+      std::cout<<"Dimension von lines: "<<lines.size()<<std::endl;
+      cv::Point P1,P2,P3;
+      P1.x=127;
+      P1.y=309;
+      P2.x=200;
+      P2.y=304;
+      P3.x=100;
+      P3.y=10;
+      cv::circle(cdst,P1,7,Scalar(255,0,0),2,CV_AA);
+      cv::circle(cdst,P2,7,Scalar(255,0,0),2,CV_AA);
+      cv::circle(cdst,P3,7,Scalar(255,0,0),2,CV_AA);
 
       cv::imwrite("Lines.jpg",cdst);
 
