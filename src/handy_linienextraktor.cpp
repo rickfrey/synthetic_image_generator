@@ -9,9 +9,11 @@ using namespace std;
 
 int main( int argc, char** argv )
 {
-    Mat Handybild, dst, cdst;
-    char* Bild = "Handybild.JPG";
-    Handybild = imread(Bild, CV_LOAD_IMAGE_COLOR);  // Read the file
+    Mat Handybild_original, Handybild, dst, cdst;
+    char* Bild = "Handybild_flaechen.JPG";
+    Handybild_original = imread(Bild, CV_LOAD_IMAGE_COLOR);  // Read the file
+    // Bildgröße verringern
+    resize(Handybild_original, Handybild, Size(), 0.5, 0.5);
 
 
     if(! Handybild.data )                              // Check for invalid input
@@ -39,7 +41,7 @@ int main( int argc, char** argv )
         cout<<c<<endl;
 
 
-        HoughLinesP(dst, lines, 1, CV_PI/360, 90, 30, 50 );
+        HoughLinesP(dst, lines, 1, CV_PI/360, 40, 15, 50 );
 
         for( size_t i = 0; i < lines.size(); i++ )
         {
@@ -90,7 +92,7 @@ int main( int argc, char** argv )
             Gegenkathete=((l[1]-l[3]));
             Ankathete=((l[2]-l[0]));
             std::cout << l[0] <<","<< l[1 ]<< "," << l[2] << "," << l[3] << std::endl;
-            Theta=atan(Gegenkathete/Ankathete)*360/(2*CV_PI);
+            Theta=cvRound(atan(Gegenkathete/Ankathete)*360/(2*CV_PI));
             //Theta=(CV_PI/2-Theta)*360/(2*CV_PI);
             laenge=cvRound(sqrt(Ankathete*Ankathete+Gegenkathete*Gegenkathete));
             // Mittelpunkt x, Mittelpunkt y, Theta, Länge
