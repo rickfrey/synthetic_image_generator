@@ -70,6 +70,7 @@ int main (int argc, char *argv[])
     //float x=1.8,y=1.8,z=0.6;
     //int pitch=-30, yaw=60;
     float z=0.6;
+    int roll=90;
     bool firstrun = true;
 
     // Schleife über alle Kameraposen
@@ -89,7 +90,7 @@ int main (int argc, char *argv[])
                     vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New();
                     camera->SetPosition(x,y,z);
                     camera->SetFocalPoint(x+1,y,z);
-                    camera->SetRoll(90);
+                    camera->SetRoll(roll);
                     camera->Pitch(pitch);
                     camera->Yaw(yaw);
                     camera->SetViewAngle(70); // 63.1 für Galaxy, 49.9 für iPhone 3GS
@@ -158,7 +159,7 @@ int main (int argc, char *argv[])
                     //                        firstrun=false;
 
                     // Pose in Textdatei schreiben
-                    myfile << x << " " << y << " " << z << " " << pitch << " " << yaw << std::endl;
+                    myfile << x << " " << y << " " << z << " " << roll << " " << pitch << " " << yaw << std::endl;
                     std::vector<Vec4i> lines;
                     HoughLinesP(dst, lines, 1, CV_PI/360, 90, 30, 50 );
                     for( size_t i = 0; i < lines.size(); i++ )
