@@ -26,6 +26,8 @@
 #include <iostream>
 #include <fstream>
 
+#include <algorithm>
+
 using namespace cv;
 
 int main (int argc, char *argv[])
@@ -64,40 +66,42 @@ int main (int argc, char *argv[])
 
     // add the actors to the scene
     renderer->AddActor(actor);
-    renderer->SetBackground(.3, .6, .3);
+    renderer->SetBackground(1, 1, 1);
 
 
     //float x=1.8,y=1.8,z=0.6;
     //int pitch=-30, yaw=60;
     float z=0.6;
     int roll=90;
-    bool firstrun = true;
 
-    // Schleife über alle Kameraposen
-    for (float x = 0.2; x <= 3.8; x += 0.5) // Schleife über alle y-Werte
-    {
-        for (float y = 0.2; y <= 3.4; y += 0.5)// Schleife über alle x-Werte
-        {
-            for(int pitch = -50; pitch < -11; pitch += 20)
-            {
-                for(int yaw = 0; yaw < 360; yaw += 10)
-                {
+    float x=0.2,y=0.2;
+    int pitch=-50, yaw=10;
 
-                    vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
-                    vtkSmartPointer<vtkPNGWriter> writer = vtkSmartPointer<vtkPNGWriter>::New();
+    //    // Schleife über alle Kameraposen
+    //    for (float x = 0.2; x <= 3.8; x += 0.5) // Schleife über alle y-Werte
+    //    {
+    //        for (float y = 0.2; y <= 3.4; y += 0.5)// Schleife über alle x-Werte
+    //        {
+    //            for(int pitch = -50; pitch < -11; pitch += 20)
+    //            {
+    //                for(int yaw = 0; yaw < 360; yaw += 10)
+    //                {
 
-                    // Kameraparameter und -pose setzen
-                    vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New();
-                    camera->SetPosition(x,y,z);
-                    camera->SetFocalPoint(x+1,y,z);
-                    camera->SetRoll(roll);
-                    camera->Pitch(pitch);
-                    camera->Yaw(yaw);
-                    camera->SetViewAngle(70); // 63.1 für Galaxy, 49.9 für iPhone 3GS
+    vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
+    vtkSmartPointer<vtkPNGWriter> writer = vtkSmartPointer<vtkPNGWriter>::New();
 
-                    renderer->SetActiveCamera(camera);
+    // Kameraparameter und -pose setzen
+    vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New();
+    camera->SetPosition(x,y,z);
+    camera->SetFocalPoint(x+1,y,z);
+    camera->SetRoll(roll);
+    camera->Pitch(pitch);
+    camera->Yaw(yaw);
+    camera->SetViewAngle(70); // 63.1 für Galaxy, 49.9 für iPhone 3GS
 
-                    /*  // Lichtquelle manuell setzen
+    renderer->SetActiveCamera(camera);
+
+    /*  // Lichtquelle manuell setzen
     vtkSmartPointer<vtkLight> light = vtkSmartPointer<vtkLight>::New();
     light->SetPosition(4,3,1);
     light->SetFocalPoint(4,3,0);
@@ -106,85 +110,123 @@ int main (int argc, char *argv[])
     renderer->AddLight(light);
 */
 
-                    renderWindow->Render();
+    renderWindow->Render();
 
-                    windowToImageFilter->SetInput(renderWindow);
-                    windowToImageFilter->Update();
+    windowToImageFilter->SetInput(renderWindow);
+    windowToImageFilter->Update();
 
-                    // NACHHER AUSKOMMENTIEREN SONST BILD FÜR JEDE POSE!!!
-                    // Abspeichern des Bildes in der aktuellen Pose
-//                    std::stringstream ss;
-//                    ss << "pos_"<< x << "_" << y << "_" << pitch << "_" << yaw << ".png";
-//                    writer->SetFileName(ss.str().c_str());//aus stringstream wird string und anschl. constant string gemacht
-//                    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
-//                    writer->Write();
+    // NACHHER AUSKOMMENTIEREN SONST BILD FÜR JEDE POSE!!!
+    // Abspeichern des Bildes in der aktuellen Pose
+    //                    std::stringstream ss;
+    //                    ss << "pos_"<< x << "_" << y << "_" << pitch << "_" << yaw << ".png";
+    //                    writer->SetFileName(ss.str().c_str());//aus stringstream wird string und anschl. constant string gemacht
+    //                    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+    //                    writer->Write();
 
-                    /////Convert VTKImageData to iplimage (OpenCV)/////////////////////////////////////
-                    // http://vtk.1045678.n5.nabble.com/From-vtkImageData-to-Iplimage-OpenCV-td5716020.html
-                    vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
-                    image = windowToImageFilter->GetOutput();
-                    //check number of components
-                    const int numComponents = image->GetNumberOfScalarComponents();
-                    //Construct the OpenCV Mat
-                    int dims[3];
-                    image->GetDimensions(dims);
-                    cv::Mat openCVImage(dims[1],dims[0],CV_8UC3, image->GetScalarPointer());
-                    //cv::cvtColor(openCVImage,openCVImage,CV_BGRA2GRAY);// Wenn auskommentiert verändert sich auch VTK-BILD?!?!?!
-                    //Flip because of different origins between vtk and OpenCV
-                    cv::flip(openCVImage,openCVImage,0);
-                    //cv::imshow("Testbild",openCVImage);
-                    //cv::imwrite("TEST_OPENCV.jpg",openCVImage);
+    /////Convert VTKImageData to iplimage (OpenCV)/////////////////////////////////////
+    // http://vtk.1045678.n5.nabble.com/From-vtkImageData-to-Iplimage-OpenCV-td5716020.html
+    vtkSmartPointer<vtkImageData> image = vtkSmartPointer<vtkImageData>::New();
+    image = windowToImageFilter->GetOutput();
+    //check number of components
+    const int numComponents = image->GetNumberOfScalarComponents();
 
-                    //Kantendetektion
-                    cv::Mat dst, cdst;
-                    cv::Canny(openCVImage,dst,50,52,3);
+    //Construct the OpenCV Mat
+    int dims[3];
+    image->GetDimensions(dims);
+    cv::Mat openCVImage(dims[1],dims[0],CV_8UC3, image->GetScalarPointer());
+    //cv::cvtColor(openCVImage,openCVImage,CV_BGRA2GRAY);// Wenn auskommentiert verändert sich auch VTK-BILD?!?!?!
+    //Flip because of different origins between vtk and OpenCV
+    cv::flip(openCVImage,openCVImage,0);
+    //cv::imshow("Testbild",openCVImage);
+    cv::imwrite("TEST_OPENCV.jpg",openCVImage);// AUSKOMMENTIEREN!
 
-                    // NACHHER AUSKOMMENTIEREN SONST BILD FÜR JEDE POSE!!!
-                    // Binäres Bild speichern:
-                    //    cv::imwrite("Kantenbild.jpg",dst);
-                    // cv::cvtColor(dst,cdst,CV_GRAY2BGR);
+    //Kantendetektion
+    cv::Mat dst, cdst;
+    cv::Canny(openCVImage,dst,50,52,3);
 
-                    cv::Point Mittelpunkt;
-                    float Gegenkathete, Ankathete, Theta, laenge;
+    // NACHHER AUSKOMMENTIEREN SONST BILD FÜR JEDE POSE!!!
+    // Binäres Bild speichern:
+    cv::imwrite("Kantenbild.jpg",dst);// AUSKOMMENTIEREN
+    cv::cvtColor(dst,cdst,CV_GRAY2BGR);// AUSKOMMENTIEREN
 
-                    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                    // Binärbild als input: Pose in Textdatei, alle mit HoughLinesP detektierte Linien in Textdatei:
-                    //                        std::ofstream myfile;
+    cv::Point Mittelpunkt;
+    float Gegenkathete, Ankathete;
+    int Theta, laenge;
 
-                    //                        // Textdatei soll nur beim ersten Durchlauf geöffnet werden
-                    //                        if(firstrun==true)
-                    //                        {
-                    //                            myfile.open("Eigenschaften.txt");
-                    //                        }
-                    //                        firstrun=false;
-
-                    // Pose in Textdatei schreiben
-                    myfile << x << " " << y << " " << z << " " << roll << " " << pitch << " " << yaw << std::endl;
-                    std::vector<Vec4i> lines;
-                    HoughLinesP(dst, lines, 1, CV_PI/360, 90, 30, 50 );
-                    for( size_t i = 0; i < lines.size(); i++ )
-                    {
-                        Vec4i l = lines[i];
-                        line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 1, CV_AA);
-                        //Eigenschaften berechnen:
-                        Mittelpunkt.x=cvRound((l[0]+l[2])/2);//Berechnung x-Koordinate des Mittelpunkts
-                        Mittelpunkt.y=cvRound((l[1]+l[3])/2);//  ""       y-koordinate
-                        cv::circle(cdst,Mittelpunkt,5,Scalar(0,255,0),2,CV_AA);
-                        Gegenkathete=((l[1]-l[3]));
-                        Ankathete=((l[2]-l[0]));
-                        std::cout<<l[0]<<","<<l[1]<<","<<l[2]<<","<<l[3]<<std::endl;
-                        Theta=cvRound(atan(Gegenkathete/Ankathete)*360/(2*CV_PI));
-                        //Theta=(CV_PI/2-Theta)*360/(2*CV_PI);
-                        laenge=cvRound(sqrt(Ankathete*Ankathete+Gegenkathete*Gegenkathete));
-
-                        // Parameter der detektierten Linie in Textdatei schreiben:
-                        myfile << Mittelpunkt.x << " " << Mittelpunkt.y << " " << Theta << " " << laenge <<std::endl;
-                    }
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Pose in Textdatei schreiben
+    myfile << x << " " << y << " " << z << " " << roll << " " << pitch << " " << yaw << std::endl;
 
 
-                    // Visualisierung der detektierten Linien
-                    /*      std::cout<<"Dimension von lines: "<<lines.size()<<std::endl;
+
+
+    //    PROBLEM!!!!!!!!!!/////////////////
+    //    HoughLinesP teilt lange Kanten in mehrere Linien hintereinander (mit fast identischer Ausrichtung) auf
+    //    Anpassen der Parameter!?!?!?!?!?!
+
+
+
+
+    // HoughLinesP-Algorithmus speichert Parameter in Vektor "lines"
+    std::vector<Vec4i> lines;
+    HoughLinesP(dst, lines, 1, CV_PI/360, 90, 30, 50 );
+
+    // Vektoren, in den die umgerechneten Linienparameter (Theta in Thetavektor, übrige Parameter in umgerechneteParameter) gespeichert werden
+    std::vector<int> Thetavektor;
+    std::vector<int> umgerechneteParameter;
+
+    int Parameterindex;
+
+    // Linienparameter von x1,y1 und x2,y2 in Theta, x-Mittelpunkt, y-Mittelpunkt und Länge umrechnen
+    for( size_t i = 0; i < lines.size(); i++ )
+    {
+        Vec4i l = lines[i];
+
+        // Nur zur Visualisierung der Linien. Kann auskommentiert werden
+        line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 1, CV_AA);
+
+        // Linienparameter von x1,y1 und x2,y2 in Theta, x-Mittelpunkt, y-Mittelpunkt und Länge umrechnen
+        Mittelpunkt.x=cvRound((l[0]+l[2])/2);
+        Mittelpunkt.y=cvRound((l[1]+l[3])/2);
+        cv::circle(cdst,Mittelpunkt,5,Scalar(0,255,0),2,CV_AA);// nur zur Visualisierung
+        Gegenkathete=((l[1]-l[3]));
+        Ankathete=((l[2]-l[0]));
+        Theta=cvRound(atan(Gegenkathete/Ankathete)*360/(2*CV_PI));
+        //Theta=(CV_PI/2-Theta)*360/(2*CV_PI);
+        laenge=cvRound(sqrt(Ankathete*Ankathete+Gegenkathete*Gegenkathete));
+
+        std::cout<<l[0]<<","<<l[1]<<","<<l[2]<<","<<l[3]<<std::endl;
+
+
+        // 1. Neuen Vektor std::vector<Vec4i> umgerechneteParameter initialisieren, in den nacheinander alle Linienparameter geschrieben werden (Theta zuerst)
+        // 2. In Vektor nach kleinstem Thetawert suchen -> Zugehörige Parameter in Textdatei schreiben und die entsprechende Zeile im Vektor löschen
+        // 3. so lange wie noch Werte => Im neuen Vektor müssten jetzt die Parameter aufsteigend nach Theta sortiert sein
+
+        Thetavektor.push_back(Theta);
+        umgerechneteParameter.push_back(Mittelpunkt.x);
+        umgerechneteParameter.push_back(Mittelpunkt.y);
+        umgerechneteParameter.push_back(laenge);
+
+
+
+
+        // Parameter der detektierten Linie in Textdatei schreiben:
+        //myfile << Mittelpunkt.x << " " << Mittelpunkt.y << " " << Theta << " " << laenge <<std::endl;
+    }
+
+    for(int Linienanzahl = 0; Linienanzahl < lines.size(); Linienanzahl++)
+    {
+        // In Vektor umgerechneteParameter nach kleinstem Theta suchen und zugehörige Parameter in Textdatei schreiben
+        int min_index = std::min_element(Thetavektor.begin(), Thetavektor.end()) - Thetavektor.begin();
+        cout << "Index für kleinstes Element: " << min_index << endl;
+        myfile << Thetavektor[min_index] << " " << umgerechneteParameter[min_index*3] << " " << umgerechneteParameter[(min_index*3) + 1] << " " << umgerechneteParameter[(min_index*3) + 2] <<std::endl;
+
+        // Kleinsten Eintrag aus Thetavektor und zugehörige Parameter aus umgerechneteParameter löschen damit neuer kleinster Eintrag berechnen kann
+        Thetavektor.erase(Thetavektor.begin() + min_index);
+        umgerechneteParameter.erase(umgerechneteParameter.begin() + min_index*3, umgerechneteParameter.begin() + min_index*3 + 3);
+    }
+
+    // Visualisierung der detektierten Linien
+    /*    std::cout<<"Dimension von lines: "<<lines.size()<<std::endl;
       cv::Point P1,P2,P3;
       P1.x=127;
       P1.y=309;
@@ -196,14 +238,16 @@ int main (int argc, char *argv[])
       cv::circle(cdst,P2,7,Scalar(255,0,0),2,CV_AA);
       cv::circle(cdst,P3,7,Scalar(255,0,0),2,CV_AA);
 */
-                    // Binär- mit überlagertem Kantenbild speichern:
-                    //      cv::imwrite("Lines.jpg",cdst);
+    // Binär- mit überlagertem Kantenbild speichern:
+    cv::imwrite("Lines.jpg",cdst);// DANACH AUSKOMMENTIEREN
 
 
-                }
-            }
-        }
-    }
+    //                }
+    //            }
+    //        }
+    //    }
+
     myfile.close();
+
     return 0;
 }
