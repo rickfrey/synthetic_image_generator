@@ -30,6 +30,9 @@
 
 using namespace cv;
 
+
+
+
 int main (int argc, char *argv[])
 {
     if ( argc != 2 )
@@ -61,7 +64,7 @@ int main (int argc, char *argv[])
     renderWindow->SetOffScreenRendering(1);
 
     // Bildgröße anpassen!
-    renderWindow->SetSize(1536,2048);// Davor: 1200,1599
+    renderWindow->SetSize(3000,4000);// Je mehr Pixel desto besser funktioniert HoughLinesP!! Davor: 1200,1599; iPhone: 1536,2048
     renderWindow->AddRenderer(renderer);
 
     // add the actors to the scene
@@ -75,7 +78,7 @@ int main (int argc, char *argv[])
     int roll=90;
 
     float x=0.2,y=0.2;
-    int pitch=-50, yaw=10;
+    int pitch=0, yaw=50;
 
     //    // Schleife über alle Kameraposen
     //    for (float x = 0.2; x <= 3.8; x += 0.5) // Schleife über alle y-Werte
@@ -141,13 +144,15 @@ int main (int argc, char *argv[])
     cv::imwrite("TEST_OPENCV.jpg",openCVImage);// AUSKOMMENTIEREN!
 
     //Kantendetektion
-    cv::Mat dst, cdst;
-    cv::Canny(openCVImage,dst,50,52,3);
+    cv::Mat dst, blured_pic, cdst;
+    cv::blur( openCVImage, blured_pic, Size(3,3) );
+    cv::Canny(blured_pic,dst,50,52,3);
 
     // NACHHER AUSKOMMENTIEREN SONST BILD FÜR JEDE POSE!!!
     // Binäres Bild speichern:
     cv::imwrite("Kantenbild.jpg",dst);// AUSKOMMENTIEREN
     cv::cvtColor(dst,cdst,CV_GRAY2BGR);// AUSKOMMENTIEREN
+
 
     cv::Point Mittelpunkt;
     float Gegenkathete, Ankathete;
@@ -168,7 +173,7 @@ int main (int argc, char *argv[])
 
     // HoughLinesP-Algorithmus speichert Parameter in Vektor "lines"
     std::vector<Vec4i> lines;
-    HoughLinesP(dst, lines, 1, CV_PI/360, 90, 30, 50 );
+    HoughLinesP(dst, lines, 0.9, CV_PI/720, 90, 20, 50 );
 
     // Vektoren, in den die umgerechneten Linienparameter (Theta in Thetavektor, übrige Parameter in umgerechneteParameter) gespeichert werden
     std::vector<int> Thetavektor;
