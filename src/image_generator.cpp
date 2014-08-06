@@ -216,7 +216,7 @@ int main (int argc, char *argv[])
     }
 
     // Schleife über alle Einträge von "lines"
-    for(int Linienanzahl = 0; Linienanzahl < lines.size(); Linienanzahl++)
+    for(int Liniennummer = 0; Liniennummer < lines.size(); Liniennummer++)
     {
         // In "Thetavektor" umgerechneteParameter nach kleinstem Theta suchen und zugehörige Parameter in Textdatei schreiben
         int min_index = std::min_element(Thetavektor.begin(), Thetavektor.end()) - Thetavektor.begin();

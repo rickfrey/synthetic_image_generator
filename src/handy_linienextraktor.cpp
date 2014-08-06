@@ -136,19 +136,108 @@ int main( int argc, char** argv )
 
         }
 
+        std::vector<Vec4i> NachThetaSortiert;
+        // Vektor Lines nach der gleichen Vorschrift sortiert wie "NachThetasortiert", damit die Container zusammenpassen!
+        std::vector<Vec4i> LinesSortiert;
+        // Endgültiger Vektor (Nach Theta sortiert und Linien fusioniert)
+        std::vector<Vec4i> Linienfusioniert;
+
         // Schleife über alle Einträge von "lines"
-        for(int Linienanzahl = 0; Linienanzahl < lines.size(); Linienanzahl++)
+        for(int Liniennummer = 0; Liniennummer < lines.size(); Liniennummer++)
         {
             // In "Thetavektor" nach kleinstem Theta suchen und zugehörigen Index in "min_index" speichern
             int min_index = std::min_element(Thetavektor.begin(), Thetavektor.end()) - Thetavektor.begin();
             cout << "Index für kleinstes Element: " << min_index << endl;
 
-            // Kleinster Thetawert wird in Textdatei geschrieben zusammen mit den zugehörigen Parametern
-            myfile << Thetavektor[min_index] << " " << umgerechneteParameter[min_index*3] << " " << umgerechneteParameter[(min_index*3) + 1] << " " << umgerechneteParameter[(min_index*3) + 2] <<std::endl;
+            // Kleinster Thetawert wird in Vektor "NachThetaSortiert" geschrieben zusammen mit den zugehörigen Parametern
+            NachThetaSortiert[Liniennummer][0] = Thetavektor[min_index];
+            NachThetaSortiert[Liniennummer][1] = umgerechneteParameter[min_index*3];
+            NachThetaSortiert[Liniennummer][2] = umgerechneteParameter[(min_index*3)+1];
+            NachThetaSortiert[Liniennummer][3] = umgerechneteParameter[(min_index*3)+2];
+
+            // Gleichzeitig: Sortieren des Vektors "lines" (gleiche Sortiervorschrift wie "NachThetaSortiert" (Sortiert abspeichern in Vektor "LinesSortiert"))
+            LinesSortiert[Liniennummer][0] = lines[min_index][0];
+            LinesSortiert[Liniennummer][1] = lines[min_index][1];
+            LinesSortiert[Liniennummer][2] = lines[min_index][2];
+            LinesSortiert[Liniennummer][3] = lines[min_index][3];
+
+            //            // Kleinster Thetawert wird in Textdatei geschrieben zusammen mit den zugehörigen Parametern
+            //            myfile << Thetavektor[min_index] << " " << umgerechneteParameter[min_index*3] << " " << umgerechneteParameter[(min_index*3) + 1] << " " << umgerechneteParameter[(min_index*3) + 2] <<std::endl;
 
             // Kleinsten Eintrag aus Thetavektor und zugehörige Parameter aus umgerechneteParameter löschen damit neuer kleinster Eintrag berechnen kann
             Thetavektor.erase(Thetavektor.begin() + min_index);
             umgerechneteParameter.erase(umgerechneteParameter.begin() + min_index*3, umgerechneteParameter.begin() + min_index*3 + 3);
+        }
+
+        // Jetzt sind alle Linien im Vektor "NachThetaSortiert" aufsteigend nach Theta sortiert mit den jeweils zugehörigen Parametern
+        // x-Mittelpunkt, y-Mittelpunkt und Länge
+        // Jetzt Vektor durchlaufen und nach Linien suchen, die sich aus mehreren Linien zusammensetzen
+        // Aktuelle Linie mit der vorigen auf Gemeinsamkeiten überprüfen (daher erst bei der zweiten Linie anfangen)
+        for(int Liniennummer = 1; Liniennummer < NachThetaSortiert.size(); Liniennummer++)
+        {
+            // Wenn Theta der aktuellen Linie +-2° mit der vorigen Linie übereinstimmt: Prüfen, ob die beiden Linien zu einer "fusioniert" werden können
+            if(NachThetaSortiert[Liniennummer][0] <= (NachThetaSortiert[Liniennummer-1][0]+2) && NachThetaSortiert[Liniennummer][0] >= (NachThetaSortiert[Liniennummer-1][0]-2))
+            {
+                // Praktisch: HoughLinesP sortiert die Parameter so: x1,y1,x2,y2 wobei x1 das Ende mit kleinerem x-Wert (weiter links) ist
+                // Wenn beide Endpunkte in einem Radius von 10 Pixeln liegen:
+                // x-Wert 1. Ende der aktuelle Linie <= x-Wert 1. Ende vorige Linie +10 UND größer als voriger x-Wert +10
+                if(LinesSortiert[Liniennummer][0] <= (LinesSortiert[Liniennummer-1][0]+10) && LinesSortiert[Liniennummer][0] >= LinesSortiert[Liniennummer-1][0]-10
+                        // UND: y-Werte dürfen nicht mehr als 10 Pixel abweichen
+                        && LinesSortiert[Liniennummer][1] <= (LinesSortiert[Liniennummer-1][1]+10) && LinesSortiert[Liniennummer][1] >= (LinesSortiert[Liniennummer-1][1]-10)
+
+                        // zusätzlich dürfen die rechten Endpunkte nicht weiter als 10 Pixel voneinander entfert sein
+                        // zuerst x-Werte vergleichen:
+                        && LinesSortiert[Liniennummer][2] <= (LinesSortiert[Liniennummer-1][2]+10) && LinesSortiert[Liniennummer][2] >= (LinesSortiert[Liniennummer-1][2]-10)
+                        // dann y-Werte:
+                        && LinesSortiert[Liniennummer][3] <= (LinesSortiert[Liniennummer-1][3]+10) && LinesSortiert[Liniennummer][3] >= LinesSortiert[Liniennummer-1][3]-10)
+                {
+                // Die beiden Linien fusionieren und neue Endpunkte in LinesSortiert[Liniennummer]schreiben (und LinesSortiert[Liniennummer-1] löschen)
+                    LinesSortiert[Liniennummer][0] = cvRound((LinesSortiert[Liniennummer][0] + LinesSortiert[Liniennummer-1][0]) / 2); // x1_Neu (Mittelwert)
+                    LinesSortiert[Liniennummer][1] = cvRound((LinesSortiert[Liniennummer][1] + LinesSortiert[Liniennummer-1][1]) / 2); // y1_Neu (Mittelwert)
+                    LinesSortiert[Liniennummer][2] = cvRound((LinesSortiert[Liniennummer][2] + LinesSortiert[Liniennummer-1][2]) / 2); // x2_Neu (Mittelwert)
+                    LinesSortiert[Liniennummer][3] = cvRound((LinesSortiert[Liniennummer][3] + LinesSortiert[Liniennummer-1][3]) / 2); // y2_Neu (Mittelwert)
+
+                    // Wie löschen??? LinesSortiert[Liniennummer][0...3].delete ?????
+
+                    // Die fusionierte Linie in Theta, Mittelpunkt und Länge-Parameter umrechnen und die entsprechende Zeile in "NachThetaSortiert" durch die neuen Parameter ersetzen
+                    // Zusätzlich Einträge in Vektor Linienfusioniert speichern (endgültiger Vektor, der anschließend in Textdatei geschrieben wird
+                    int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer][0] + LinesSortiert[Liniennummer][2]) / 2 );
+                    int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer][1] + LinesSortiert[Liniennummer][3]) / 2 );
+                    int Gegenkath_neu = cvRound( LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer][3] );
+                    int Ankath_neu = cvRound( LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer][0] );
+                    int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
+                    int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
+
+                    NachThetaSortiert[Liniennummer][0] = Theta_neu;
+                    NachThetaSortiert[Liniennummer][1] = Mittelp_x_neu;
+                    NachThetaSortiert[Liniennummer][2] = Mittelp_y_neu;
+                    NachThetaSortiert[Liniennummer][3] = laenge_neu;
+
+                    Linienfusioniert[Liniennummer][0] = Theta_neu;
+                    Linienfusioniert[Liniennummer][1] = Mittelp_x_neu;
+                    Linienfusioniert[Liniennummer][2] = Mittelp_y_neu;
+                    Linienfusioniert[Liniennummer][3] = laenge_neu;
+                }
+
+                // Wenn nur ein Endpunkt jeder Linie in einem Radius von 10 Pixeln zum anderen liegt:
+                else if()// HIER WEITERMACHEN!!!!!!!!!!!!!!!!!!!!)
+                {
+
+                }
+
+            }
+
+
+
+
+            // Wenn Linie nicht fusioniert werden kann werden Einträge einfach von "NachThetaSortiert" nach "Linienfusioniert" kopiert
+            else
+            {
+                Linienfusioniert[Liniennummer][0] = NachThetaSortiert[Liniennummer][0];
+                Linienfusioniert[Liniennummer][1] = NachThetaSortiert[Liniennummer][1];
+                Linienfusioniert[Liniennummer][2] = NachThetaSortiert[Liniennummer][2];
+                Linienfusioniert[Liniennummer][3] = NachThetaSortiert[Liniennummer][3];
+            }
         }
 
         imwrite("Handybild_detektierte_Linien.jpg",cdst);
