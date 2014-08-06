@@ -179,26 +179,26 @@ int main (int argc, char *argv[])
     std::vector<int> Thetavektor;
     std::vector<int> umgerechneteParameter;
 
-    int Parameterindex;
-
     // Linienparameter von x1,y1 und x2,y2 in Theta, x-Mittelpunkt, y-Mittelpunkt und Länge umrechnen
     for( size_t i = 0; i < lines.size(); i++ )
     {
         Vec4i l = lines[i];
 
-        // Nur zur Visualisierung der Linien. Kann auskommentiert werden
+        // Aktualle Linie in "cdst" malen (Nur zur Visualisierung)
         line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 1, CV_AA);
 
         // Linienparameter von x1,y1 und x2,y2 in Theta, x-Mittelpunkt, y-Mittelpunkt und Länge umrechnen
         Mittelpunkt.x=cvRound((l[0]+l[2])/2);
         Mittelpunkt.y=cvRound((l[1]+l[3])/2);
-        cv::circle(cdst,Mittelpunkt,5,Scalar(0,255,0),2,CV_AA);// nur zur Visualisierung
         Gegenkathete=((l[1]-l[3]));
         Ankathete=((l[2]-l[0]));
         Theta=cvRound(atan(Gegenkathete/Ankathete)*360/(2*CV_PI));
-        //Theta=(CV_PI/2-Theta)*360/(2*CV_PI);
         laenge=cvRound(sqrt(Ankathete*Ankathete+Gegenkathete*Gegenkathete));
 
+        // Mittelpunkt der aktuellen Linie in "cdst" malen (nur zur Visualisierung)
+        cv::circle(cdst,Mittelpunkt,5,Scalar(0,255,0),2,CV_AA);
+
+        // Ausgabe der Endpunkte der aktuellen Linie
         std::cout<<l[0]<<","<<l[1]<<","<<l[2]<<","<<l[3]<<std::endl;
 
 
@@ -206,23 +206,23 @@ int main (int argc, char *argv[])
         // 2. In Vektor nach kleinstem Thetawert suchen -> Zugehörige Parameter in Textdatei schreiben und die entsprechende Zeile im Vektor löschen
         // 3. so lange wie noch Werte => Im neuen Vektor müssten jetzt die Parameter aufsteigend nach Theta sortiert sein
 
+        // Thetawert für aktuelle Linie wird in "Thetavektor" geschrieben, andere Parameter in "umgerechneteParameter"
+        // Das Ganze dient dazu, die Linien aufsteigend nach Theta zu sortieren
         Thetavektor.push_back(Theta);
         umgerechneteParameter.push_back(Mittelpunkt.x);
         umgerechneteParameter.push_back(Mittelpunkt.y);
         umgerechneteParameter.push_back(laenge);
 
-
-
-
-        // Parameter der detektierten Linie in Textdatei schreiben:
-        //myfile << Mittelpunkt.x << " " << Mittelpunkt.y << " " << Theta << " " << laenge <<std::endl;
     }
 
+    // Schleife über alle Einträge von "lines"
     for(int Linienanzahl = 0; Linienanzahl < lines.size(); Linienanzahl++)
     {
-        // In Vektor umgerechneteParameter nach kleinstem Theta suchen und zugehörige Parameter in Textdatei schreiben
+        // In "Thetavektor" umgerechneteParameter nach kleinstem Theta suchen und zugehörige Parameter in Textdatei schreiben
         int min_index = std::min_element(Thetavektor.begin(), Thetavektor.end()) - Thetavektor.begin();
         cout << "Index für kleinstes Element: " << min_index << endl;
+
+        // Kleinster Thetawert wird in Textdatei geschrieben zusammen mit den zugehörigen Parametern
         myfile << Thetavektor[min_index] << " " << umgerechneteParameter[min_index*3] << " " << umgerechneteParameter[(min_index*3) + 1] << " " << umgerechneteParameter[(min_index*3) + 2] <<std::endl;
 
         // Kleinsten Eintrag aus Thetavektor und zugehörige Parameter aus umgerechneteParameter löschen damit neuer kleinster Eintrag berechnen kann
