@@ -154,16 +154,19 @@ int main( int argc, char** argv )
 //            tmpVec.
 
             // Kleinster Thetawert wird in Vektor "NachThetaSortiert" geschrieben zusammen mit den zugehörigen Parametern
-            NachThetaSortiert[Liniennummer][0] = Thetavektor[min_index];
-            NachThetaSortiert[Liniennummer][1] = umgerechneteParameter[(min_index*3)];
-            NachThetaSortiert[Liniennummer][2] = umgerechneteParameter[((min_index*3)+1)];
-            NachThetaSortiert[Liniennummer][3] = umgerechneteParameter[((min_index*3)+2)];
+            NachThetaSortiert.push_back(Vec4i(Thetavektor[min_index] , umgerechneteParameter[(min_index*3)] , umgerechneteParameter[((min_index*3)+1)] , umgerechneteParameter[((min_index*3)+2)] ));
+//            NachThetaSortiert[Liniennummer][0] = Thetavektor[min_index];
+//            NachThetaSortiert[Liniennummer][1] = umgerechneteParameter[(min_index*3)];
+//            NachThetaSortiert[Liniennummer][2] = umgerechneteParameter[((min_index*3)+1)];
+//            NachThetaSortiert[Liniennummer][3] = umgerechneteParameter[((min_index*3)+2)];
+            int blub;
 
             // Gleichzeitig: Sortieren des Vektors "lines" (gleiche Sortiervorschrift wie "NachThetaSortiert" (Sortiert abspeichern in Vektor "LinesSortiert"))
-            LinesSortiert[Liniennummer][0] = lines[min_index][0];
-            LinesSortiert[Liniennummer][1] = lines[min_index][1];
-            LinesSortiert[Liniennummer][2] = lines[min_index][2];
-            LinesSortiert[Liniennummer][3] = lines[min_index][3];
+            LinesSortiert.push_back(Vec4i( lines[min_index][0] , lines[min_index][1] , lines[min_index][2] , lines[min_index][3] ));
+//            LinesSortiert[Liniennummer][0] = lines[min_index][0];
+//            LinesSortiert[Liniennummer][1] = lines[min_index][1];
+//            LinesSortiert[Liniennummer][2] = lines[min_index][2];
+//            LinesSortiert[Liniennummer][3] = lines[min_index][3];
 
             //            // Kleinster Thetawert wird in Textdatei geschrieben zusammen mit den zugehörigen Parametern
             //            myfile << Thetavektor[min_index] << " " << umgerechneteParameter[min_index*3] << " " << umgerechneteParameter[(min_index*3) + 1] << " " << umgerechneteParameter[(min_index*3) + 2] <<std::endl;
@@ -171,6 +174,8 @@ int main( int argc, char** argv )
             // Kleinsten Eintrag aus Thetavektor und zugehörige Parameter aus umgerechneteParameter löschen damit neuer kleinster Eintrag berechnen kann
             Thetavektor.erase(Thetavektor.begin() + min_index);
             umgerechneteParameter.erase(umgerechneteParameter.begin() + min_index*3, umgerechneteParameter.begin() + min_index*3 + 3);
+            lines.erase(lines.begin()+min_index);
+            int blub2;
         }
 
         // Jetzt sind alle Linien im Vektor "NachThetaSortiert" aufsteigend nach Theta sortiert mit den jeweils zugehörigen Parametern
@@ -379,10 +384,11 @@ int main( int argc, char** argv )
         // Wenn Linie nicht fusioniert werden kann werden Einträge einfach von "NachThetaSortiert" nach "Linienfusioniert" kopiert
         else
         {
-            Linienfusioniert[Liniennummer][0] = NachThetaSortiert[Liniennummer][0];
-            Linienfusioniert[Liniennummer][1] = NachThetaSortiert[Liniennummer][1];
-            Linienfusioniert[Liniennummer][2] = NachThetaSortiert[Liniennummer][2];
-            Linienfusioniert[Liniennummer][3] = NachThetaSortiert[Liniennummer][3];
+                Linienfusioniert.push_back(Vec4i( NachThetaSortiert[Liniennummer][0] , NachThetaSortiert[Liniennummer][1] , NachThetaSortiert[Liniennummer][2] , NachThetaSortiert[Liniennummer][3] ));
+//            Linienfusioniert[Liniennummer][0] = NachThetaSortiert[Liniennummer][0];
+//            Linienfusioniert[Liniennummer][1] = NachThetaSortiert[Liniennummer][1];
+//            Linienfusioniert[Liniennummer][2] = NachThetaSortiert[Liniennummer][2];
+//            Linienfusioniert[Liniennummer][3] = NachThetaSortiert[Liniennummer][3];
         }
             myfile << Linienfusioniert[Liniennummer][0] << " " << Linienfusioniert[Liniennummer][1] << " " << Linienfusioniert[Liniennummer][2] << " " << Linienfusioniert[Liniennummer][3] <<std::endl;
     }
@@ -393,5 +399,5 @@ int main( int argc, char** argv )
     myfile.close();
 //}
 
-waitKey();
+//waitKey();
 }
