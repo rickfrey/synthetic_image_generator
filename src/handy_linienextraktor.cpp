@@ -150,6 +150,9 @@ int main( int argc, char** argv )
             int min_index = std::min_element(Thetavektor.begin(), Thetavektor.end()) - Thetavektor.begin();
             cout << "Index für kleinstes Element: " << min_index << endl;
 
+//            Vec4i tmpVec;
+//            tmpVec.
+
             // Kleinster Thetawert wird in Vektor "NachThetaSortiert" geschrieben zusammen mit den zugehörigen Parametern
             NachThetaSortiert[Liniennummer][0] = Thetavektor[min_index];
             NachThetaSortiert[Liniennummer][1] = umgerechneteParameter[(min_index*3)];
