@@ -32,8 +32,8 @@ int main( int argc, char** argv )
     int threshold2 = 40;
 
     // Trackbars für die beiden Parameter erzeugen
-    cv::createTrackbar("Canny1","Binär",&threshold1,100,NULL);
-    cv::createTrackbar("Canny2","Binär",&threshold2,100,NULL);
+    //cv::createTrackbar("Canny1","Binär",&threshold1,100,NULL);
+    //cv::createTrackbar("Canny2","Binär",&threshold2,100,NULL);
 
     // Vektor definieren, in dem die Endpunkte der Linien aus HoughLinesP gespeichert werden
     std::vector<Vec4i> lines;
@@ -42,9 +42,9 @@ int main( int argc, char** argv )
     char c;
 
     // So lange die Tastatureingabe nicht "s" = save oder "q" = quit ist läuft die Schleife und ermöglicht das Regeln der Trackbars
-    while(c != 'q' && c != 's'){
+//    while(c != 'q' && c != 's'){
 
-        c = (char)waitKey(2);
+//        c = (char)waitKey(2);
 
         // Canny Kantendetektor
         cv::Canny(Handybild,dst,threshold1,threshold2,3);
@@ -77,20 +77,20 @@ int main( int argc, char** argv )
 
             //            myfile<<"Mittelpunkt "<<i<<": "<<Mittelpunkt.x<<", "<<Mittelpunkt.y<<"; Theta: " << Theta << "; Länge: " << laenge << ";" <<std::endl;
             */
-        }
+//        }
 
         // Anzeigen des Originalbildes, des Binärbildes und des Binärbildes mit überlagerten Linien
-        namedWindow( "source",WINDOW_NORMAL);
-        namedWindow( "detected lines",WINDOW_NORMAL);
-        namedWindow("Binär",WINDOW_NORMAL);
+//        namedWindow( "source",WINDOW_NORMAL);
+//        namedWindow( "detected lines",WINDOW_NORMAL);
+//        namedWindow("Binär",WINDOW_NORMAL);
 
-        imshow("source", Handybild);
-        imshow("detected lines", cdst);
-        imshow("Binär",dst);
+//        imshow("source", Handybild);
+//        imshow("detected lines", cdst);
+//        imshow("Binär",dst);
     }
 
     // Wenn "s" = save gedrückt dann werden die Linienparameter umgerechnet und abgespeichert
-    if(c=='s'){
+//    if(c=='s'){
 
         // Stream erzeugen, um eine Textdatei schreiben zu können
         std::ofstream myfile;
@@ -152,9 +152,9 @@ int main( int argc, char** argv )
 
             // Kleinster Thetawert wird in Vektor "NachThetaSortiert" geschrieben zusammen mit den zugehörigen Parametern
             NachThetaSortiert[Liniennummer][0] = Thetavektor[min_index];
-            NachThetaSortiert[Liniennummer][1] = umgerechneteParameter[min_index*3];
-            NachThetaSortiert[Liniennummer][2] = umgerechneteParameter[(min_index*3)+1];
-            NachThetaSortiert[Liniennummer][3] = umgerechneteParameter[(min_index*3)+2];
+            NachThetaSortiert[Liniennummer][1] = umgerechneteParameter[(min_index*3)];
+            NachThetaSortiert[Liniennummer][2] = umgerechneteParameter[((min_index*3)+1)];
+            NachThetaSortiert[Liniennummer][3] = umgerechneteParameter[((min_index*3)+2)];
 
             // Gleichzeitig: Sortieren des Vektors "lines" (gleiche Sortiervorschrift wie "NachThetaSortiert" (Sortiert abspeichern in Vektor "LinesSortiert"))
             LinesSortiert[Liniennummer][0] = lines[min_index][0];
@@ -381,13 +381,14 @@ int main( int argc, char** argv )
             Linienfusioniert[Liniennummer][2] = NachThetaSortiert[Liniennummer][2];
             Linienfusioniert[Liniennummer][3] = NachThetaSortiert[Liniennummer][3];
         }
+            myfile << Linienfusioniert[Liniennummer][0] << " " << Linienfusioniert[Liniennummer][1] << " " << Linienfusioniert[Liniennummer][2] << " " << Linienfusioniert[Liniennummer][3] <<std::endl;
     }
 
     imwrite("Handybild_detektierte_Linien.jpg",cdst);
 
     cout<<"Bildgröße="<< Handybild.rows << "x" << Handybild.cols <<endl;
     myfile.close();
-}
+//}
 
 waitKey();
 }
