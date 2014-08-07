@@ -358,8 +358,9 @@ int main( int argc, char** argv )
                 }
 
                 // Jetzt nur noch: Linien überschneiden sich, aber kein Endpunkt liegt nahe am anderen
-                // o-------------------------o
-                //              o------------------------------o
+                // o-------------------------o   aktuelle Linie
+                //              o------------------------------o   vorige Linie
+                // Dazu: Ermittlung, ob rechter Punkt der aktuellen Linie geringen Abstand zur vorigen Linie hat und gleichzeitig linker Punkt der vorigen Linie geringen Abstand zur aktuellen Linie hat
 
 
 
