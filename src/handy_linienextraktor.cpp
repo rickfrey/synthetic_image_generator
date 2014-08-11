@@ -218,17 +218,12 @@ int main( int argc, char** argv )
 
                 // Wie löschen??? LinesSortiert[Liniennummer][0...3].delete ?????
 
-                // Problem: LinesSortiert werden schon falsch berechnet: Vorzeichen drehen sich um (aus -30° wird 30 und aus 7 -7!!!!
                 // Die fusionierte Linie in Theta, Mittelpunkt und Länge-Parameter umrechnen und die entsprechende Zeile in "NachThetaSortiert" durch die neuen Parameter ersetzen
                 // Zusätzlich Einträge in Vektor Linienfusioniert speichern (endgültiger Vektor, der anschließend in Textdatei geschrieben wird
                 int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer+1][0] + LinesSortiert[Liniennummer+1][2]) / 2 );
                 int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer+1][1] + LinesSortiert[Liniennummer+1][3]) / 2 );
-                float Gegenkath_neu = LinesSortiert[Liniennummer+1][3] - LinesSortiert[Liniennummer+1][1];
+                float Gegenkath_neu = LinesSortiert[Liniennummer+1][1] - LinesSortiert[Liniennummer+1][3];
                 float Ankath_neu = LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer+1][0];
-
-
-                // HIER LIEGT DAS PROBLEM!!!!!! Theta ist beim ersten Durchlauf +30, müsste aber -30 sein!!!
-                // WOBEI: Gegenkath_neu muss eigentlich negativ sein!
                 int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
                 int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
 
@@ -250,143 +245,151 @@ int main( int argc, char** argv )
                 //                    Linienfusioniert[Liniennummer][2] = Mittelp_y_neu;
                 //                    Linienfusioniert[Liniennummer][3] = laenge_neu;
             }
-            /*
-                // Wenn nur jeweils linke Endpunkte übereinstimmen (Überlappung)
-                //
-                // o----------------------------o Liniennummer-1
-                // o---------------o Liniennummer
-                else if(sqrt(pow(LinesSortiert[Liniennummer][0] - LinesSortiert[Liniennummer-1][0] , 2) + pow(LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer-1][1] , 2) ) <= 10)
+
+            // Wenn nur jeweils linke Endpunkte übereinstimmen (Überlappung)
+            //
+            // o----------------------------o Liniennummer-1
+            // o---------------o Liniennummer
+            else if(sqrt(pow(LinesSortiert[Liniennummer][0] - LinesSortiert[Liniennummer+1][0] , 2) + pow(LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer+1][1] , 2) ) <= 10)
+            {
+                // Linker Endpunkt der neuen Linie kann schon berechnet werden (gemittelt)
+                LinesSortiert[Liniennummer+1][0] = cvRound((LinesSortiert[Liniennummer][0] + LinesSortiert[Liniennummer+1][0]) / 2); // x1_Neu (Mittelwert)
+                LinesSortiert[Liniennummer+1][1] = cvRound((LinesSortiert[Liniennummer][1] + LinesSortiert[Liniennummer+1][1]) / 2); // y1_Neu (Mittelwert)
+
+                // checken welcher der beiden rechten Endpunkte den größeren Abstand zum neuen linken Endpunkt hat
+                // Wenn der Endpunkt der aktuellen Linie [Liniennummer] einen größeren Abstand hat dann stellt ihr Endpunkt den Endpunkt der neuen Linie [Liniennummer+1] dar:
+                if( sqrt( pow(LinesSortiert[Liniennummer+1][0] - LinesSortiert[Liniennummer][2] , 2) + pow(LinesSortiert[Liniennummer+1][1] - LinesSortiert[Liniennummer][3] , 2))
+                        >= sqrt( pow(LinesSortiert[Liniennummer+1][0] - LinesSortiert[Liniennummer+1][2] , 2) + pow(LinesSortiert[Liniennummer+1][1] - LinesSortiert[Liniennummer+1][3] , 2)))
                 {
-                    // Linker Endpunkt der neuen Linie kann schon berechnet werden (gemittelt)
-                    LinesSortiert[Liniennummer][0] = cvRound((LinesSortiert[Liniennummer][0] + LinesSortiert[Liniennummer-1][0]) / 2); // x1_Neu (Mittelwert)
-                    LinesSortiert[Liniennummer][1] = cvRound((LinesSortiert[Liniennummer][1] + LinesSortiert[Liniennummer-1][1]) / 2); // y1_Neu (Mittelwert)
-
-                    // checken welcher der beiden rechten Endpunkte den größeren Abstand zum neuen linken Endpunkt hat
-                    // Wenn der Endpunkt der Linie [Liniennummer-1] einen größeren Abstand hat dann stellt ihr Endpunkt den Endpunkt der neuen Linie dar:
-                    if( sqrt( pow(LinesSortiert[Liniennummer][0] - LinesSortiert[Liniennummer-1][2] , 2) + pow(LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer-1][3] , 2))
-                            >= sqrt( pow(LinesSortiert[Liniennummer][0] - LinesSortiert[Liniennummer][2] , 2) + pow(LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer][3] , 2)))
-                    {
-                        LinesSortiert[Liniennummer][2] = LinesSortiert[Liniennummer-1][2];
-                        LinesSortiert[Liniennummer][3] = LinesSortiert[Liniennummer-1][3];
-                    }
-
-                    // Wenn der Endpunkt der aktuelle Linie [Liniennummer] einen größeren Abstand aufweist bleiben die Einträge für x2 und y2 unverändert!
-
-                    // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
-                    int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer][0] + LinesSortiert[Liniennummer][2]) / 2 );
-                    int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer][1] + LinesSortiert[Liniennummer][3]) / 2 );
-                    int Gegenkath_neu = cvRound( LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer][3] );
-                    int Ankath_neu = cvRound( LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer][0] );
-                    int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
-                    int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
-
-                    // Vektor "NachThetasortiert" mit neuer Linie aktualisieren für nächsten Schleifendurchlauf
-                    NachThetaSortiert[Liniennummer][0] = Theta_neu;
-                    NachThetaSortiert[Liniennummer][1] = Mittelp_x_neu;
-                    NachThetaSortiert[Liniennummer][2] = Mittelp_y_neu;
-                    NachThetaSortiert[Liniennummer][3] = laenge_neu;
-
-                    // Neue Linie in "Linienfusioniert" schreiben
-                    Linienfusioniert[Liniennummer][0] = Theta_neu;
-                    Linienfusioniert[Liniennummer][1] = Mittelp_x_neu;
-                    Linienfusioniert[Liniennummer][2] = Mittelp_y_neu;
-                    Linienfusioniert[Liniennummer][3] = laenge_neu;
+                    LinesSortiert[Liniennummer+1][2] = LinesSortiert[Liniennummer][2];
+                    LinesSortiert[Liniennummer+1][3] = LinesSortiert[Liniennummer][3];
                 }
 
-                // Wenn nur jeweils rechte Endpunkte übereinstimmen (Überlappung)
-                //
-                // o----------------------------o Liniennummer-1
-                //              o---------------o Liniennummer
-                else if(sqrt ( pow( (LinesSortiert[Liniennummer][2] - LinesSortiert[(Liniennummer-1)][2]) , 2) + pow( (LinesSortiert[Liniennummer][3] - LinesSortiert[(Liniennummer-1)][3]) , 2) ) <= 10 )
+                // Wenn der Endpunkt der nächsten Linie [Liniennummer+1] einen größeren Abstand aufweist zum neu berechneten linken Endpunkt bleiben die Einträge für x2 und y2 unverändert!
+
+                // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
+                int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer+1][0] + LinesSortiert[Liniennummer+1][2]) / 2 );
+                int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer+1][1] + LinesSortiert[Liniennummer+1][3]) / 2 );
+                float Gegenkath_neu = LinesSortiert[Liniennummer+1][1] - LinesSortiert[Liniennummer+1][3];
+                float Ankath_neu = LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer+1][0];
+                int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
+                int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
+
+                // Vektor "NachThetasortiert" mit neuer Linie aktualisieren für nächsten Schleifendurchlauf
+                NachThetaSortiert[Liniennummer+1][0] = Theta_neu;
+                NachThetaSortiert[Liniennummer+1][1] = Mittelp_x_neu;
+                NachThetaSortiert[Liniennummer+1][2] = Mittelp_y_neu;
+                NachThetaSortiert[Liniennummer+1][3] = laenge_neu;
+
+                // Neue Linie in "Linienfusioniert" schreiben
+                Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
+                //                    Linienfusioniert[Liniennummer][0] = Theta_neu;
+                //                    Linienfusioniert[Liniennummer][1] = Mittelp_x_neu;
+                //                    Linienfusioniert[Liniennummer][2] = Mittelp_y_neu;
+                //                    Linienfusioniert[Liniennummer][3] = laenge_neu;
+            }
+
+            // Wenn nur jeweils rechte Endpunkte übereinstimmen (Überlappung)
+            //
+            // o----------------------------o Liniennummer-1
+            //              o---------------o Liniennummer
+            else if(sqrt ( pow( (LinesSortiert[Liniennummer][2] - LinesSortiert[(Liniennummer+1)][2]) , 2) + pow( (LinesSortiert[Liniennummer][3] - LinesSortiert[(Liniennummer+1)][3]) , 2) ) <= 10 )
+            {
+                // Rechter Endpunkt der neuen Linie kann schon berechnet werden (gemittelt)
+                LinesSortiert[Liniennummer+1][2] = cvRound((LinesSortiert[Liniennummer][2] + LinesSortiert[(Liniennummer+1)][2]) / 2); // x2_Neu (Mittelwert)
+                LinesSortiert[Liniennummer+1][3] = cvRound((LinesSortiert[Liniennummer][3] + LinesSortiert[Liniennummer+1][3]) / 2); // y2_Neu (Mittelwert)
+
+                // checken welcher der beiden linken Endpunkte den größeren Abstand zum neuen rechten Endpunkt hat
+                // Wenn der Endpunkt der aktuellen Linie [Liniennummer] einen größeren Abstand hat dann stellt ihr Endpunkt den Endpunkt der neuen Linie dar:
+                if( sqrt( pow(LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer][0] , 2) + pow(LinesSortiert[Liniennummer+1][3] - LinesSortiert[Liniennummer][1] , 2))
+                        >= sqrt( pow(LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer+1][0] , 2) + pow(LinesSortiert[Liniennummer+1][3] - LinesSortiert[Liniennummer+1][1] , 2)))
                 {
-                    // Rechter Endpunkt der neuen Linie kann schon berechnet werden (gemittelt)
-                    LinesSortiert[Liniennummer][2] = cvRound((LinesSortiert[Liniennummer][2] + LinesSortiert[(Liniennummer-1)][2]) / 2); // x2_Neu (Mittelwert)
-                    LinesSortiert[Liniennummer][3] = cvRound((LinesSortiert[Liniennummer][3] + LinesSortiert[Liniennummer-1][3]) / 2); // y2_Neu (Mittelwert)
-
-                    // checken welcher der beiden linken Endpunkte den größeren Abstand zum neuen rechten Endpunkt hat
-                    // Wenn der Endpunkt der Linie [Liniennummer-1] einen größeren Abstand hat dann stellt ihr Endpunkt den Endpunkt der neuen Linie dar:
-                    if( sqrt( pow(LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer-1][0] , 2) + pow(LinesSortiert[Liniennummer][3] - LinesSortiert[Liniennummer-1][1] , 2))
-                            >= sqrt( pow(LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer][0] , 2) + pow(LinesSortiert[Liniennummer][3] - LinesSortiert[Liniennummer][1] , 2)))
-                    {
-                        LinesSortiert[Liniennummer][0] = LinesSortiert[Liniennummer-1][0];
-                        LinesSortiert[Liniennummer][1] = LinesSortiert[Liniennummer-1][1];
-                    }
-
-
-                    // Wenn der Endpunkt der aktuelle Linie [Liniennummer] einen größeren Abstand aufweist bleiben die Einträge für x1 und y1 unverändert!
-
-                    // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
-                    int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer][0] + LinesSortiert[Liniennummer][2]) / 2 );
-                    int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer][1] + LinesSortiert[Liniennummer][3]) / 2 );
-                    int Gegenkath_neu = cvRound( LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer][3] );
-                    int Ankath_neu = cvRound( LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer][0] );
-                    int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
-                    int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
+                    LinesSortiert[Liniennummer+1][0] = LinesSortiert[Liniennummer][0];
+                    LinesSortiert[Liniennummer+1][1] = LinesSortiert[Liniennummer][1];
                 }
 
-                // Wenn rechter Endpunkt der aktuellen Linie [Liniennummer-1] mit dem linken Endpunkt der vorigen Linie [Liniennummer] übereinstimmt (Zusammenstückelung einer Kante aus mehreren Linien)
-                // Liniennummer             Liniennummer-1
-                // o--------------------o o-------------o
-                else if(sqrt( pow( LinesSortiert[Liniennummer][0] - LinesSortiert[Liniennummer-1][2] , 2 ) + pow( LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer-1][3] , 2 ) ) <= 10 )
-                {
-                    LinesSortiert[Liniennummer][0] = LinesSortiert[Liniennummer-1][0]; // x1_neu = x1 der vorigen Linie [Liniennummer-1]
-                    LinesSortiert[Liniennummer][1] = LinesSortiert[Liniennummer-1][1]; // y1_neu = y1 der vorigen Linie [Liniennummer-1]
-                    LinesSortiert[Liniennummer][2] = LinesSortiert[Liniennummer][2]; // x2_neu = x2 der aktuellen Linie [Liniennummer]
-                    LinesSortiert[Liniennummer][3] = LinesSortiert[Liniennummer][3]; // y2_neu = y2 der aktuellen Linie [Liniennummer]
+                // Wenn der Endpunkt der aktuelle Linie [Liniennummer] einen größeren Abstand aufweist bleiben die Einträge für x1 und y1 unverändert!
 
-                    // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
-                    int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer][0] + LinesSortiert[Liniennummer][2]) / 2 );
-                    int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer][1] + LinesSortiert[Liniennummer][3]) / 2 );
-                    int Gegenkath_neu = cvRound( LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer][3] );
-                    int Ankath_neu = cvRound( LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer][0] );
-                    int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
-                    int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
+                // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
+                int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer+1][0] + LinesSortiert[Liniennummer+1][2]) / 2 );
+                int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer+1][1] + LinesSortiert[Liniennummer+1][3]) / 2 );
+                float Gegenkath_neu = LinesSortiert[Liniennummer+1][1] - LinesSortiert[Liniennummer+1][3];
+                float Ankath_neu = LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer+1][0];
+                int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
+                int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
 
-                    // Vektor "NachThetasortiert" mit neuer Linie aktualisieren für nächsten Schleifendurchlauf
-                    NachThetaSortiert[Liniennummer][0] = Theta_neu;
-                    NachThetaSortiert[Liniennummer][1] = Mittelp_x_neu;
-                    NachThetaSortiert[Liniennummer][2] = Mittelp_y_neu;
-                    NachThetaSortiert[Liniennummer][3] = laenge_neu;
+                // Vektor "NachThetasortiert" mit neuer Linie aktualisieren für nächsten Schleifendurchlauf
+                NachThetaSortiert[Liniennummer+1][0] = Theta_neu;
+                NachThetaSortiert[Liniennummer+1][1] = Mittelp_x_neu;
+                NachThetaSortiert[Liniennummer+1][2] = Mittelp_y_neu;
+                NachThetaSortiert[Liniennummer+1][3] = laenge_neu;
 
-                    // Neue Linie in "Linienfusioniert" schreiben
-                    Linienfusioniert[Liniennummer][0] = Theta_neu;
-                    Linienfusioniert[Liniennummer][1] = Mittelp_x_neu;
-                    Linienfusioniert[Liniennummer][2] = Mittelp_y_neu;
-                    Linienfusioniert[Liniennummer][3] = laenge_neu;
-                }
+                // Neue Linie in "Linienfusioniert" schreiben
+                Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
+                //                    Linienfusioniert[Liniennummer][0] = Theta_neu;
+                //                    Linienfusioniert[Liniennummer][1] = Mittelp_x_neu;
+                //                    Linienfusioniert[Liniennummer][2] = Mittelp_y_neu;
+                //                    Linienfusioniert[Liniennummer][3] = laenge_neu;
+
+            }
+
+            // Wenn rechter Endpunkt der aktuellen Linie [Liniennummer] mit dem linken Endpunkt der folgenden Linie [Liniennummer+1] übereinstimmt (Zusammenstückelung einer Kante aus mehreren Linien)
+            // Liniennummer             Liniennummer+1
+            // o--------------------o o-------------o
+            else if(sqrt( pow( LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer+1][0] , 2 ) + pow( LinesSortiert[Liniennummer][3] - LinesSortiert[Liniennummer+1][1] , 2 ) ) <= 10 )
+            {
+                LinesSortiert[Liniennummer+1][0] = LinesSortiert[Liniennummer][0]; // x1_neu = x1 der aktuellen Linie [Liniennummer]
+                LinesSortiert[Liniennummer+1][1] = LinesSortiert[Liniennummer][1]; // y1_neu = y1 der aktuellen Linie [Liniennummer]
+                LinesSortiert[Liniennummer+1][2] = LinesSortiert[Liniennummer+1][2]; // x2_neu = x2 der folgenden Linie [Liniennummer+1]
+                LinesSortiert[Liniennummer+1][3] = LinesSortiert[Liniennummer+1][3]; // y2_neu = y2 der folgenden Linie [Liniennummer+1]
+
+                // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
+                int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer+1][0] + LinesSortiert[Liniennummer+1][2]) / 2 );
+                int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer+1][1] + LinesSortiert[Liniennummer+1][3]) / 2 );
+                float Gegenkath_neu = LinesSortiert[Liniennummer+1][1] - LinesSortiert[Liniennummer+1][3];
+                float Ankath_neu = LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer+1][0];
+                int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
+                int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
+
+                // Vektor "NachThetasortiert" mit neuer Linie aktualisieren für nächsten Schleifendurchlauf
+                NachThetaSortiert[Liniennummer+1][0] = Theta_neu;
+                NachThetaSortiert[Liniennummer+1][1] = Mittelp_x_neu;
+                NachThetaSortiert[Liniennummer+1][2] = Mittelp_y_neu;
+                NachThetaSortiert[Liniennummer+1][3] = laenge_neu;
+
+                // Neue Linie in "Linienfusioniert" schreiben
+                Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
+            }
 
                 // Wenn rechter Eckpunkt der aktuellen Linie [Liniennummer] mit den linken Endpunkt der vorigen Linie [Liniennummer-1] übereinstimmt (Zusammenstückelung einer Kante aus mehreren Linien)
                 //
-                // Liniennummer-1           Liniennummer
+                // Liniennummer+1           Liniennummer
                 // o--------------------o o-------------o
-                else if(sqrt( pow( LinesSortiert[Liniennummer-1][0] - LinesSortiert[Liniennummer][2] , 2 ) + pow( LinesSortiert[Liniennummer-1][1] - LinesSortiert[Liniennummer][3] , 2 ) ) <= 10 )
+                else if(sqrt( pow( LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer][0] , 2 ) + pow( LinesSortiert[Liniennummer+1][3] - LinesSortiert[Liniennummer][1] , 2 ) ) <= 10 )
                 {
-                    LinesSortiert[Liniennummer][0] = LinesSortiert[Liniennummer][0]; // x1_neu = x1 der aktuellen Linie [Liniennummer]
-                    LinesSortiert[Liniennummer][1] = LinesSortiert[Liniennummer][1]; // y1_neu = y1 der aktuellen Linie [Liniennummer]
-                    LinesSortiert[Liniennummer][2] = LinesSortiert[Liniennummer-1][2]; // x2_neu = x2 der vorigen Linie [Liniennummer-1]
-                    LinesSortiert[Liniennummer][3] = LinesSortiert[Liniennummer-1][3]; // y2_neu = y2 der vorigen Linie [Liniennummer-1]
+                    LinesSortiert[Liniennummer+1][0] = LinesSortiert[Liniennummer+1][0]; // x1_neu = x1 der folgenden Linie [Liniennummer+1]
+                    LinesSortiert[Liniennummer+1][1] = LinesSortiert[Liniennummer+1][1]; // y1_neu = y1 der folgenden Linie [Liniennummer+1]
+                    LinesSortiert[Liniennummer+1][2] = LinesSortiert[Liniennummer][2]; // x2_neu = x2 der aktuellen Linie [Liniennummer]
+                    LinesSortiert[Liniennummer+1][3] = LinesSortiert[Liniennummer][3]; // y2_neu = y2 der aktuellen Linie [Liniennummer]
 
                     // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
                     int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer][0] + LinesSortiert[Liniennummer][2]) / 2 );
                     int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer][1] + LinesSortiert[Liniennummer][3]) / 2 );
-                    int Gegenkath_neu = cvRound( LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer][3] );
-                    int Ankath_neu = cvRound( LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer][0] );
+                    float Gegenkath_neu = LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer][3];
+                    float Ankath_neu = LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer][0];
                     int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
                     int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
 
                     // Vektor "NachThetasortiert" mit neuer Linie aktualisieren für nächsten Schleifendurchlauf
-                    NachThetaSortiert[Liniennummer][0] = Theta_neu;
-                    NachThetaSortiert[Liniennummer][1] = Mittelp_x_neu;
-                    NachThetaSortiert[Liniennummer][2] = Mittelp_y_neu;
-                    NachThetaSortiert[Liniennummer][3] = laenge_neu;
+                    NachThetaSortiert[Liniennummer+1][0] = Theta_neu;
+                    NachThetaSortiert[Liniennummer+1][1] = Mittelp_x_neu;
+                    NachThetaSortiert[Liniennummer+1][2] = Mittelp_y_neu;
+                    NachThetaSortiert[Liniennummer+1][3] = laenge_neu;
 
                     // Neue Linie in "Linienfusioniert" schreiben
-                    Linienfusioniert[Liniennummer][0] = Theta_neu;
-                    Linienfusioniert[Liniennummer][1] = Mittelp_x_neu;
-                    Linienfusioniert[Liniennummer][2] = Mittelp_y_neu;
-                    Linienfusioniert[Liniennummer][3] = laenge_neu;
+                    Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
                 }
-
+/*
                 // Jetzt nur noch: Linien überschneiden sich, aber kein Endpunkt liegt nahe am anderen
                 // o-------------------------o   aktuelle Linie
                 //              o------------------------------o   vorige Linie
@@ -401,12 +404,7 @@ int main( int argc, char** argv )
                 myfile << Linienfusioniert[Liniennummer][0] << " " << Linienfusioniert[Liniennummer][1] << " " << Linienfusioniert[Liniennummer][2] << " " << Linienfusioniert[Liniennummer][3] <<std::endl;
             }
 
-
-
-
         }
-
-
 
 
         // Wenn Linie nicht fusioniert werden (weil Winkeldifferenz zu groß) kann werden Einträge einfach von "NachThetaSortiert" nach "Linienfusioniert" kopiert
