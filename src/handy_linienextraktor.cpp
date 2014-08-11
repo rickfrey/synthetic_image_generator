@@ -145,8 +145,10 @@ int main( int argc, char** argv )
     std::vector<Vec4i> NachThetaSortiert;
     // Vektor Lines nach der gleichen Vorschrift sortiert wie "NachThetasortiert", damit die Container zusammenpassen!
     std::vector<Vec4i> LinesSortiert;
-    // Endgültiger Vektor (Nach Theta sortiert und Linien fusioniert)
+    // Vektor mit Einträgen nach Theta sortiert und Linien fusioniert
     std::vector<Vec4i> Linienfusioniert;
+    // Gleiche Einträge wie Linienfusioniert, nur dass dieselbe Linie nicht doppelt auftaucht
+    std::vector<Vec4i> Linienfusioniert2;
 
     // Schleife über alle Einträge von "lines"
     int AnzahlFusionen=0;
@@ -162,18 +164,10 @@ int main( int argc, char** argv )
 
         // Kleinster Thetawert wird in Vektor "NachThetaSortiert" geschrieben zusammen mit den zugehörigen Parametern
         NachThetaSortiert.push_back(Vec4i(Thetavektor[min_index] , umgerechneteParameter[(min_index*3)] , umgerechneteParameter[((min_index*3)+1)] , umgerechneteParameter[((min_index*3)+2)] ));
-        //            NachThetaSortiert[Liniennummer][0] = Thetavektor[min_index];
-        //            NachThetaSortiert[Liniennummer][1] = umgerechneteParameter[(min_index*3)];
-        //            NachThetaSortiert[Liniennummer][2] = umgerechneteParameter[((min_index*3)+1)];
-        //            NachThetaSortiert[Liniennummer][3] = umgerechneteParameter[((min_index*3)+2)];
-        int blub;
 
         // Gleichzeitig: Sortieren des Vektors "lines" (gleiche Sortiervorschrift wie "NachThetaSortiert" (Sortiert abspeichern in Vektor "LinesSortiert"))
         LinesSortiert.push_back(Vec4i( lines[min_index][0] , lines[min_index][1] , lines[min_index][2] , lines[min_index][3] ));
-        //            LinesSortiert[Liniennummer][0] = lines[min_index][0];
-        //            LinesSortiert[Liniennummer][1] = lines[min_index][1];
-        //            LinesSortiert[Liniennummer][2] = lines[min_index][2];
-        //            LinesSortiert[Liniennummer][3] = lines[min_index][3];
+
 
         //            // Kleinster Thetawert wird in Textdatei geschrieben zusammen mit den zugehörigen Parametern
         //            myfile << Thetavektor[min_index] << " " << umgerechneteParameter[min_index*3] << " " << umgerechneteParameter[(min_index*3) + 1] << " " << umgerechneteParameter[(min_index*3) + 2] <<std::endl;
@@ -182,7 +176,6 @@ int main( int argc, char** argv )
         Thetavektor.erase(Thetavektor.begin() + min_index);
         umgerechneteParameter.erase(umgerechneteParameter.begin() + min_index*3, umgerechneteParameter.begin() + min_index*3 + 3);
         lines.erase(lines.begin()+min_index);
-        int blub2;
     }
 
     // Jetzt sind alle Linien im Vektor "NachThetaSortiert" aufsteigend nach Theta sortiert mit den jeweils zugehörigen Parametern
@@ -238,13 +231,10 @@ int main( int argc, char** argv )
                 cout << "Gegenkath_neu= " << Gegenkath_neu << endl;
                 cout << "Test: Länge der 3. Linie= " << NachThetaSortiert[2][3] << endl;
 
-                // Neue Linie in "Linienfusioniert" schreiben
+                // Neue Linie in Vektor "Linienfusioniert" schreiben
                 Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
-                //                    Linienfusioniert[Liniennummer][0] = Theta_neu;
-                //                    Linienfusioniert[Liniennummer][1] = Mittelp_x_neu;
-                //                    Linienfusioniert[Liniennummer][2] = Mittelp_y_neu;
-                //                    Linienfusioniert[Liniennummer][3] = laenge_neu;
             }
+
 
             // Wenn nur jeweils linke Endpunkte übereinstimmen (Überlappung)
             //
@@ -283,11 +273,8 @@ int main( int argc, char** argv )
 
                 // Neue Linie in "Linienfusioniert" schreiben
                 Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
-                //                    Linienfusioniert[Liniennummer][0] = Theta_neu;
-                //                    Linienfusioniert[Liniennummer][1] = Mittelp_x_neu;
-                //                    Linienfusioniert[Liniennummer][2] = Mittelp_y_neu;
-                //                    Linienfusioniert[Liniennummer][3] = laenge_neu;
             }
+
 
             // Wenn nur jeweils rechte Endpunkte übereinstimmen (Überlappung)
             //
@@ -326,12 +313,8 @@ int main( int argc, char** argv )
 
                 // Neue Linie in "Linienfusioniert" schreiben
                 Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
-                //                    Linienfusioniert[Liniennummer][0] = Theta_neu;
-                //                    Linienfusioniert[Liniennummer][1] = Mittelp_x_neu;
-                //                    Linienfusioniert[Liniennummer][2] = Mittelp_y_neu;
-                //                    Linienfusioniert[Liniennummer][3] = laenge_neu;
-
             }
+
 
             // Wenn rechter Endpunkt der aktuellen Linie [Liniennummer] mit dem linken Endpunkt der folgenden Linie [Liniennummer+1] übereinstimmt (Zusammenstückelung einer Kante aus mehreren Linien)
             // Liniennummer             Liniennummer+1
@@ -361,35 +344,35 @@ int main( int argc, char** argv )
                 Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
             }
 
-                // Wenn rechter Eckpunkt der aktuellen Linie [Liniennummer] mit den linken Endpunkt der vorigen Linie [Liniennummer-1] übereinstimmt (Zusammenstückelung einer Kante aus mehreren Linien)
-                //
-                // Liniennummer+1           Liniennummer
-                // o--------------------o o-------------o
-                else if(sqrt( pow( LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer][0] , 2 ) + pow( LinesSortiert[Liniennummer+1][3] - LinesSortiert[Liniennummer][1] , 2 ) ) <= 10 )
-                {
-                    LinesSortiert[Liniennummer+1][0] = LinesSortiert[Liniennummer+1][0]; // x1_neu = x1 der folgenden Linie [Liniennummer+1]
-                    LinesSortiert[Liniennummer+1][1] = LinesSortiert[Liniennummer+1][1]; // y1_neu = y1 der folgenden Linie [Liniennummer+1]
-                    LinesSortiert[Liniennummer+1][2] = LinesSortiert[Liniennummer][2]; // x2_neu = x2 der aktuellen Linie [Liniennummer]
-                    LinesSortiert[Liniennummer+1][3] = LinesSortiert[Liniennummer][3]; // y2_neu = y2 der aktuellen Linie [Liniennummer]
+            // Wenn rechter Eckpunkt der aktuellen Linie [Liniennummer] mit den linken Endpunkt der vorigen Linie [Liniennummer-1] übereinstimmt (Zusammenstückelung einer Kante aus mehreren Linien)
+            //
+            // Liniennummer+1           Liniennummer
+            // o--------------------o o-------------o
+            else if(sqrt( pow( LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer][0] , 2 ) + pow( LinesSortiert[Liniennummer+1][3] - LinesSortiert[Liniennummer][1] , 2 ) ) <= 10 )
+            {
+                LinesSortiert[Liniennummer+1][0] = LinesSortiert[Liniennummer+1][0]; // x1_neu = x1 der folgenden Linie [Liniennummer+1]
+                LinesSortiert[Liniennummer+1][1] = LinesSortiert[Liniennummer+1][1]; // y1_neu = y1 der folgenden Linie [Liniennummer+1]
+                LinesSortiert[Liniennummer+1][2] = LinesSortiert[Liniennummer][2]; // x2_neu = x2 der aktuellen Linie [Liniennummer]
+                LinesSortiert[Liniennummer+1][3] = LinesSortiert[Liniennummer][3]; // y2_neu = y2 der aktuellen Linie [Liniennummer]
 
-                    // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
-                    int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer][0] + LinesSortiert[Liniennummer][2]) / 2 );
-                    int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer][1] + LinesSortiert[Liniennummer][3]) / 2 );
-                    float Gegenkath_neu = LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer][3];
-                    float Ankath_neu = LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer][0];
-                    int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
-                    int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
+                // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
+                int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer][0] + LinesSortiert[Liniennummer][2]) / 2 );
+                int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer][1] + LinesSortiert[Liniennummer][3]) / 2 );
+                float Gegenkath_neu = LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer][3];
+                float Ankath_neu = LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer][0];
+                int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
+                int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
 
-                    // Vektor "NachThetasortiert" mit neuer Linie aktualisieren für nächsten Schleifendurchlauf
-                    NachThetaSortiert[Liniennummer+1][0] = Theta_neu;
-                    NachThetaSortiert[Liniennummer+1][1] = Mittelp_x_neu;
-                    NachThetaSortiert[Liniennummer+1][2] = Mittelp_y_neu;
-                    NachThetaSortiert[Liniennummer+1][3] = laenge_neu;
+                // Vektor "NachThetasortiert" mit neuer Linie aktualisieren für nächsten Schleifendurchlauf
+                NachThetaSortiert[Liniennummer+1][0] = Theta_neu;
+                NachThetaSortiert[Liniennummer+1][1] = Mittelp_x_neu;
+                NachThetaSortiert[Liniennummer+1][2] = Mittelp_y_neu;
+                NachThetaSortiert[Liniennummer+1][3] = laenge_neu;
 
-                    // Neue Linie in "Linienfusioniert" schreiben
-                    Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
-                }
-/*
+                // Neue Linie in "Linienfusioniert" schreiben
+                Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
+            }
+            /*
                 // Jetzt nur noch: Linien überschneiden sich, aber kein Endpunkt liegt nahe am anderen
                 // o-------------------------o   aktuelle Linie
                 //              o------------------------------o   vorige Linie
@@ -400,8 +383,10 @@ int main( int argc, char** argv )
             // Wenn Winkelbedingung erfüllt aber Linien trotzdem nicht fusioniert werden können (weil zu weit auseinander)
             // Dann soll die aktuelle Linie in Linienfusioniert übernommen werden
             else{ Linienfusioniert.push_back(Vec4i( NachThetaSortiert[Liniennummer][0] , NachThetaSortiert[Liniennummer][1] , NachThetaSortiert[Liniennummer][2] , NachThetaSortiert[Liniennummer][3] ));
+                Linienfusioniert2.push_back(Vec4i( NachThetaSortiert[Liniennummer][0] , NachThetaSortiert[Liniennummer][1] , NachThetaSortiert[Liniennummer][2] , NachThetaSortiert[Liniennummer][3] ));
 
-                myfile << Linienfusioniert[Liniennummer][0] << " " << Linienfusioniert[Liniennummer][1] << " " << Linienfusioniert[Liniennummer][2] << " " << Linienfusioniert[Liniennummer][3] <<std::endl;
+
+                //myfile << Linienfusioniert[Liniennummer][0] << " " << Linienfusioniert[Liniennummer][1] << " " << Linienfusioniert[Liniennummer][2] << " " << Linienfusioniert[Liniennummer][3] <<std::endl;
             }
 
         }
@@ -411,17 +396,42 @@ int main( int argc, char** argv )
         else
         {
             Linienfusioniert.push_back(Vec4i( NachThetaSortiert[Liniennummer][0] , NachThetaSortiert[Liniennummer][1] , NachThetaSortiert[Liniennummer][2] , NachThetaSortiert[Liniennummer][3] ));
-            //            Linienfusioniert[Liniennummer][0] = NachThetaSortiert[Liniennummer][0];
-            //            Linienfusioniert[Liniennummer][1] = NachThetaSortiert[Liniennummer][1];
-            //            Linienfusioniert[Liniennummer][2] = NachThetaSortiert[Liniennummer][2];
-            //            Linienfusioniert[Liniennummer][3] = NachThetaSortiert[Liniennummer][3];
+            Linienfusioniert2.push_back(Vec4i( NachThetaSortiert[Liniennummer][0] , NachThetaSortiert[Liniennummer][1] , NachThetaSortiert[Liniennummer][2] , NachThetaSortiert[Liniennummer][3] ));
 
-            myfile << Linienfusioniert[Liniennummer][0] << " " << Linienfusioniert[Liniennummer][1] << " " << Linienfusioniert[Liniennummer][2] << " " << Linienfusioniert[Liniennummer][3] <<std::endl;
+            //myfile << Linienfusioniert[Liniennummer][0] << " " << Linienfusioniert[Liniennummer][1] << " " << Linienfusioniert[Liniennummer][2] << " " << Linienfusioniert[Liniennummer][3] <<std::endl;
         }
 
     }
 
-    //myfile << Linienfusioniert[0][0] << " " << Linienfusioniert[0][1] << " " << Linienfusioniert[0][2] << " " << Linienfusioniert[0][3] << endl;
+    // Linienanzahl begrenzen, um Anzahl der zu berechnenden Kombinationen zu beschränken
+    int maxAnzahlLinien = 8;
+    if (Linienfusioniert2.size() > maxAnzahlLinien)
+    {
+        std::vector<int> Laengenvektor,Indexvektor;
+
+        // Die Werte für die Linienlängen werden in den Vektor "Laengenvektor" kopiert
+        for(int i=0; i < Linienfusioniert2.size(); i++){
+            Laengenvektor.push_back(Linienfusioniert2[i][3]);
+        }
+
+        // Jedes Element aus "Laengenvektor" bekommt einen Index zugewiesen, der seiner Größe (Linienlänge) entspricht (die längste Linie bekommt index 1)
+        for(int i = 0; i < maxAnzahlLinien; i++){
+            int max_index = std::max_element(Laengenvektor.begin(), Laengenvektor.end()) - Laengenvektor.begin();
+            Indexvektor.push_back(max_index);
+
+            // anschließend wird maximales Element in Längenvektor 0 gesetzt, damit neues maximales berechnet werden kann
+            Laengenvektor[max_index] = 0;
+        }
+
+        // Linienfusioniert2 zeilenweise durchgehen und in Textdatei schreiben falls die entsprechende Zeilennummer im Indexvektor enthalten ist
+        for(int i = 0; i < Linienfusioniert2.size(); i++){
+
+            // Wenn der Indexvektor das Element i enthält (also die aktuelle Linienlänge zu den längsten x Linien gehört wird sie in die Textdatei geschrieben
+        if(std::find(Indexvektor.begin(), Indexvektor.end(), i) != Indexvektor.end()) {
+            myfile << Linienfusioniert2[i][0] << " " << Linienfusioniert2[i][1] << " " << Linienfusioniert2[i][2] << " " << Linienfusioniert2[i][3] <<std::endl;
+        }
+        }
+    }
 
     imwrite("Handybild_detektierte_Linien.jpg",cdst);
 
