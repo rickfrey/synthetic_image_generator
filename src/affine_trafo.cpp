@@ -94,7 +94,6 @@ public:
     {
         filename = new std::string("modelTransformed.stl");// /opt/modelTransformed.stl
         model = vtkSmartPointer<vtkPolyData>::New();
-
     }
 
     ~vtkSaveModelCallback()
@@ -107,9 +106,6 @@ public:
     vtkSmartPointer<vtkPolyData>  model;
 
     vtkTransformPolyDataFilter* PolyDataFilter;
-
-
-
 };
 
 void vtkSaveModelCallback::Execute(vtkObject *caller, unsigned long, void *)
@@ -158,79 +154,58 @@ int main ( int argc, char *argv[] )
     // Verbindung zu mapper (Geometrische Definition), actor hat infos über Abstand etc. (z.B. auch Textur)
     actor->SetMapper(mapper);
 
-    //TEST!!!///////////////////////////
+    // set camera
     vtkSmartPointer<vtkCamera> camera = vtkSmartPointer<vtkCamera>::New(); // vtkCamera is a virtual camera for 3D rendering
-    camera->SetPosition(-1.9,0,1.5);//EINHEIT: m!!! // bei x=-2.44 kommt hintere schräge Bande
-    camera->SetFocalPoint(0,0,0);     // Anschließend: Position und FocalPoint müssen in jeder Schleife neu gesetzt werden, zusätzlich Schleife für
-    // jede Position: alle Pitch- und Yaw-Winkel durchfotografieren
+    camera->SetPosition(-1.9,0,1.5); // EINHEIT: m
+    camera->SetFocalPoint(0,0,0);
     camera->SetRoll(90);
     camera->Pitch(10);
     camera->Yaw(0);
     camera->SetViewAngle(63.1); // Der Angle of View der realen Kamera kann über Focal length und Sensorgröße ausgerechnet werden (Wikipedia)!!!
-    //camera->Roll(90);
-    //camera->Azimuth(40);
-    //camera->Elevation(30);
-    ///////////////////////////////////
+
 
     vtkSmartPointer<vtkRenderer> renderer =
             vtkSmartPointer<vtkRenderer>::New();    // A renderer is an object that controls the rendering process for objects. Rendering
     // is the process of converting geometry, a specification for lights, and
     // a camera view into an image
 
-    //TEST!!!//////////////////////////
     renderer->SetActiveCamera(camera);
-    ///////////////////////////////////
 
     vtkSmartPointer<vtkRenderWindow> renderWindow =
             vtkSmartPointer<vtkRenderWindow>::New(); // create a window for renderers to draw into
     renderWindow->AddRenderer(renderer);
-    //TEST///
-    //std::cout<<renderWindow->GetSize()<<std::endl;
     renderWindow->SetSize(400,533); // Wenn auskommentiert wird die Karte perfekt auf den Bildschirm gerendert aber output.png ist schwarz?!?!?!?!?!!
-    std::cout<<"blub"<<renderWindow->GetSize()[0]<<"blub"<<renderWindow->GetSize()[1]<<std::endl;
 
-    /////////
     vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
             vtkSmartPointer<vtkRenderWindowInteractor>::New(); // Ermöglicht Interaktion mit Maus/ Tastatur
     renderWindowInteractor->SetRenderWindow(renderWindow);
     vtkInteractorStyleSwitch::SafeDownCast(renderWindowInteractor->GetInteractorStyle())->SetCurrentStyleToTrackballCamera();
 
-
     renderer->AddActor(actor);
-    renderer->SetBackground(0.3, 0.6, 0.3); // Background color green
+    renderer->GradientBackgroundOn();
+    renderer->SetBackground(1,1,1);
+    renderer->SetBackground2(0,0,0.5);
 
     renderWindow->Render();
 
     //Add Axes
     vtkSmartPointer<vtkAxesActor> axes = vtkSmartPointer<vtkAxesActor>::New();
     axes->SetOrigin(0.,0.,0.);
+    axes->SetConeRadius(0.2);
+    axes->SetNormalizedShaftLength(1,1,1);
+    axes->SetNormalizedTipLength(0.2,0.2,0.2);
+    axes->SetTotalLength(2,2,2);
+    axes->AxisLabelsOff();
     renderer->AddViewProp( axes );
 
-    //SPEICHERN
     vtkSmartPointer<vtkTransformPolyDataFilter> PolyDataFilter = vtkSmartPointer<vtkTransformPolyDataFilter>::New();
     PolyDataFilter->SetInputConnection(reader->GetOutputPort());
 
-
-
-    //Add Widget
-
-    vtkSmartPointer<vtkPlaneSource> planeSource =
-            vtkSmartPointer<vtkPlaneSource>::New();
-    planeSource->SetXResolution(4);
-    planeSource->SetYResolution(4);
-    planeSource->SetOrigin(-1,-1,0);
-    planeSource->SetPoint1(1,-1,0);
-    planeSource->SetPoint2(-1,1,0);
-
-    // Create a mapper and actor for the plane: show it as a wireframe
-    vtkSmartPointer<vtkPolyDataMapper> planeMapper =
-            vtkSmartPointer<vtkPolyDataMapper>::New();
-    planeMapper->SetInputConnection(planeSource->GetOutputPort());
-    vtkSmartPointer<vtkActor> planeActor =
-            vtkSmartPointer<vtkActor>::New();
-    planeActor->SetMapper(planeMapper);
+    vtkSmartPointer<vtkActor> planeActor = vtkSmartPointer<vtkActor>::New();
     planeActor->GetProperty()->SetRepresentationToWireframe();
     planeActor->GetProperty()->SetColor(1,0,0);
+
+    // Add Affine Widget
     vtkSmartPointer<vtkAffineWidget> affineWidget = vtkSmartPointer<vtkAffineWidget>::New();
     affineWidget->SetInteractor(renderWindowInteractor);
     affineWidget->CreateDefaultRepresentation();
@@ -243,7 +218,6 @@ int main ( int argc, char *argv[] )
 
     affineWidget->AddObserver(vtkCommand::InteractionEvent,affineCallback);
     affineWidget->AddObserver(vtkCommand::EndInteractionEvent,affineCallback);
-
     affineWidget->On();
 
     vtkSmartPointer<vtkSaveModelCallback> saveModelCallback = vtkSmartPointer<vtkSaveModelCallback>::New();
@@ -252,20 +226,17 @@ int main ( int argc, char *argv[] )
     renderWindowInteractor->AddObserver ( vtkCommand::KeyPressEvent, saveModelCallback );
 
 
-    //TEST!!!///////////////////
-    vtkSmartPointer<vtkWindowToImageFilter> ImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
-    ImageFilter->SetInput(renderWindow);  // vtkWindowToImageFilter provides methods needed to read the data in
-    // a vtkWindow and use it as input to the imaging pipeline. This is
-    // useful for saving an image to a file for example
-    ImageFilter->SetMagnification(1);
-    ImageFilter->Update();
+    // Bild erzeugen
+//    vtkSmartPointer<vtkWindowToImageFilter> ImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
+//    ImageFilter->SetInput(renderWindow);
+//    ImageFilter->SetMagnification(1);
+//    ImageFilter->Update();
 
-    vtkSmartPointer<vtkPNGWriter> pngWriter = vtkSmartPointer<vtkPNGWriter>::New(); // Writes PNG files
-    pngWriter->SetFileName("output.png");
-    pngWriter->SetInput(ImageFilter->GetOutput());
-    pngWriter->Update();
-    pngWriter->Write();
-    ////////////////////////////
+//    vtkSmartPointer<vtkPNGWriter> pngWriter = vtkSmartPointer<vtkPNGWriter>::New(); // Writes PNG files
+//    pngWriter->SetFileName("output.png");
+//    pngWriter->SetInput(ImageFilter->GetOutput());
+//    pngWriter->Update();
+//    pngWriter->Write();
 
     renderWindowInteractor->Start();
 
