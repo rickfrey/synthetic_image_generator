@@ -433,6 +433,14 @@ int main( int argc, char** argv )
         }
     }
 
+    // Wenn die Linienanzahl unter der maximalen Anzahl liegt werden die Linien ohne Filterung in die Textdatei übernommen
+    else{
+        for(int i = 0; i < Linienfusioniert2.size(); i++){
+            myfile << Linienfusioniert2[i][0] << " " << Linienfusioniert2[i][1] << " " << Linienfusioniert2[i][2] << " " << Linienfusioniert2[i][3] <<std::endl;
+        }
+    }
+
+    // Zur Stichprobenkontrolle (vor vollständigem Durchlauf des Raumes) können Bilder aus den vorgegebenen Posen abgespeichert werden
     imwrite("Handybild_detektierte_Linien.jpg",cdst);
 
     cout<<"Bildgröße="<< Handybild.rows << "x" << Handybild.cols <<endl;
