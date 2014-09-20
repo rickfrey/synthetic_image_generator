@@ -260,6 +260,7 @@ int main (int argc, char *argv[])
                         // Gleiche Einträge wie Linienfusioniert, nur dass dieselbe Linie nicht doppelt auftaucht
                         std::vector<Vec4i> Linienfusioniert2;
 
+
                         // Schleife über alle Einträge von "lines"
                         int AnzahlFusionen=0;
                         int linessize = lines.size();
@@ -292,8 +293,47 @@ int main (int argc, char *argv[])
                         // x-Mittelpunkt, y-Mittelpunkt und Länge
                         // Jetzt Vektor durchlaufen und nach Linien suchen, die sich aus mehreren Linien zusammensetzen
                         // Aktuelle Linie mit der nächsten auf Gemeinsamkeiten überprüfen
+
+
+
+
                         for(int Liniennummer = 0; Liniennummer < NachThetaSortiert.size(); Liniennummer++)
                         {
+
+
+
+                            //////////////////////////////////////////////////////////////
+                            // Definition verschiedener Variablen (für folgenden Fall:)
+                            // Ao----oB   aktuelle Linie
+                            // Co----------oD   folgende Linie
+                            // Definition Schnittpunkt, Endpunkte A-D (A und B der aktuellen, C und D der folgenden Linie)
+                            float SPx,SPy,SP2x,SP2y;
+                            int Ax = LinesSortiert[Liniennummer][0];
+                            int Ay = LinesSortiert[Liniennummer][1];
+                            int Bx = LinesSortiert[Liniennummer][2];
+                            int By = LinesSortiert[Liniennummer][3];
+
+                            int Cx = LinesSortiert[Liniennummer+1][0];
+                            int Cy = LinesSortiert[Liniennummer+1][1];
+                            int Dx = LinesSortiert[Liniennummer+1][2];
+                            int Dy = LinesSortiert[Liniennummer+1][3];
+
+                            // Bestimmen von u (bzw. u2 für zweite Fallunterscheidung:
+                            float u = (Cy-((Ax-Cx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
+                            float u2 = (Dy-((Ax-Dx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
+                            // u in f einsetzen, um Schnittpunkt zu bestimmen
+                            SPx =  Ax + u * (Bx-Ax);
+                            SPy =  Ay + u * (By-Ay);
+                            SP2x = Ax + u2 * (Bx-Ax);
+                            SP2y = Ay + u2 * (By-Ay);
+
+                            // Distanz zwischen SP und C checken
+                            float Distanz1 = sqrt((SPx-Cx)*(SPx-Cx)+(SPy-Cy)*(SPy-Cy));
+                            // Distanz zwischen SP2 und D checken
+                            float Distanz2 = sqrt((SPx-Dx)*(SPx-Dx)+(SPy-Dy)*(SPy-Dy));
+                            /////////////////////////////////////////////////////////////////////
+
+
                             // Wenn Theta der aktuellen Linie +-2° mit der vorigen Linie übereinstimmt: Prüfen, ob die beiden Linien zu einer "fusioniert" werden können
                             if(NachThetaSortiert[Liniennummer][0] <= ( (NachThetaSortiert[Liniennummer+1][0]) + 2) && NachThetaSortiert[Liniennummer][0] >= ( (NachThetaSortiert[Liniennummer+1][0]) - 2))
                             {
@@ -482,45 +522,18 @@ int main (int argc, char *argv[])
                                     // Neue Linie in "Linienfusioniert" schreiben
                                     Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
                                 }
-                                /*
-                // Jetzt: Linien überschneiden sich, aber kein Endpunkt liegt nahe am anderen
-                // Ao-------------------------oB   aktuelle Linie
-                //              Co------------------------------oD   folgende Linie
-                // Dazu: Ermittlung, ob rechter Punkt der aktuellen Linie geringen Abstand zur vorigen Linie hat und gleichzeitig linker Punkt der vorigen Linie geringen Abstand zur aktuellen Linie hat
-*/
 
 
-                                // Definition Schnittpunkt, Endpunkte A-D (A und B der aktuellen, C und D der folgenden Linie)
-                                float SPx,SPy,SP2x,Sp2y;
-                                int Ax = LinesSortiert[Liniennummer][0];
-                                int Ay = LinesSortiert[Liniennummer][1];
-                                int Bx = LinesSortiert[Liniennummer][2];
-                                int By = LinesSortiert[Liniennummer][3];
-
-                                int Cx = LinesSortiert[Liniennummer+1][0];
-                                int Cy = LinesSortiert[Liniennummer+1][1];
-                                int Dx = LinesSortiert[Liniennummer+1][2];
-                                int Dy = LinesSortiert[Liniennummer+1][3];
+                                // Jetzt: Linien überschneiden sich, aber kein Endpunkt liegt nahe am anderen
+                                // Ao-------------------------oB   aktuelle Linie
+                                //              Co------------------------------oD   folgende Linie
+                                // Dazu: Ermittlung, ob rechter Punkt der aktuellen Linie geringen Abstand zur vorigen Linie hat und gleichzeitig linker Punkt der vorigen Linie geringen Abstand zur aktuellen Linie hat
 
                                 // Linien werden mit Stütz- und Richtungsvektor beschrieben; f = aktuelle Linie, g = folgende Linie, fnormal = Richtungsvektor normal zu f und Stützvektor=C
                                 // Alle folgenden Vektoren sind Transponiert:
                                 // f = (Ax; Bx) + u (Bx-Ax; By-Ay)
                                 // g = (Cx; Cy) + v (Dx-Cx; Dy-Cy)
                                 // fnormal = (Cx; Cy) + w (By-Ay; -(Bx-Ax))
-
-                                // Bestimmen von u (bzw. u2 für zweite Fallunterscheidung:
-                                float u = (Cy-((Ax-Cx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
-                                float u2 = (Dy-((Ax-Dx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
-                                // u in f einsetzen, um Schnittpunkt zu bestimmen
-                                SPx =  Ax + u * (Bx-Ax);
-                                SPy =  Ay + u * (By-Ay);
-                                SP2x = Ax + u2 * (Bx-Ax);
-                                SP2y = Ay + u2 * (By-Ay);
-
-                                // Distanz zwischen SP und C checken
-                                float Distanz1 = sqrt((SPx-Cx)*(SPx-Cx)+(SPy-Cy)*(SPy-Cy));
-                                // Distanz zwischen SP2 und D checken
-                                float Distanz2 = sqrt((SPx-Dx)*(SPx-Dx)+(SPy-Dy)*(SPy-Dy));
 
                                 else if( Distanz1<=10 && SPx > Ax && SPx < Bx )
                                 {
