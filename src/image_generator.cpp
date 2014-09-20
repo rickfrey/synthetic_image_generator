@@ -43,27 +43,30 @@ int main (int argc, char *argv[])
     //	PARAMETER DEFINIEREN (alle Angaben in [m] bzw. [°])
 
     // Begrenzung der Kameraposen in x-,y- und z-Richtung:
-    float xmin = 0.2 , xmax = 3.8 ;
-    float ymin = 0.2 , ymax = 3.4 ;
-    float zmin = 0.3 , zmax = 0.3 ;
+    float xmin = 0.5 , xmax = 0.51 ;// vorher: 0.2,3.8
+    float ymin = 0.3 , ymax = 0.31 ;// vorher: 0.2,3.4
+    float zmin = 0.15 , zmax = 0.16 ;
 
     // Begrenzung der Kameraposen in pitch- und yaw-Richtung
 
-    int pitchmin  = -50 , pitchmax = 0 ;
-    int yawmin = 0 , yawmax = 360 ;
+    int pitchmin  = 0 , pitchmax = 1 ;// vorher: -50,0
+    int yawmin = 30 , yawmax = 31 ;//vorher 0,360
 
     // Auflösung der Kameraposen (translatorisch u. rotatorisch)
-    int Rx = 0.1 , Ry = 0.1 , Rz = 0.1 ;
-    int Ralpha = 5 , Rgamma = 5 ; // um die y-Achse wird nicht rotiert, da das Handy entweder senkrecht oder waagerecht gehalten werden soll
+    float Rx = 0.1 , Ry = 0.1 , Rz = 0.1 ;
+    int Rpitch = 5 , Ryaw = 5 ; // um die x-Achse (roll) wird nicht rotiert, da das Handy entweder senkrecht oder waagerecht gehalten werden soll
 
     // Bildwinkel (iPhone 3GS: FOV = 49.9; Samsung Galaxy: FOV = 63.1)
-    float FOV = 49.9 ;
+    float FOV = 70 ;
 
     // Auflösung der Handkamerabilder (Pixel). Hier kann auch das Seitenverhältnis (bzw. senkrechter, waagerechter Kamerasensor) verändert werden
     int Rxi = 2048 , Reta = 1536 ;
 
     // Anzahl der maximal zulässigen Linienanzahl, die aus einem Bild extrahiert werden sollen
     int maxAnzahlLinien = 12 ;
+
+    // Roll zu 90 Grad definieren, da Bild sonst falsch generiert wird
+    int roll=90;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -72,6 +75,7 @@ int main (int argc, char *argv[])
         cout << "Required parameters: Filename" << endl;
         return EXIT_FAILURE;
     }
+
 
     // STL-Modell (mit neuem Koordinatensystem!) laden:
     std::string inputFilename = argv[1];
@@ -102,22 +106,21 @@ int main (int argc, char *argv[])
 
     // add the actors to the scene
     renderer->AddActor(actor);
-    renderer->SetBackground(1, 1, 1);
+    renderer->GradientBackgroundOn();
+    renderer->SetBackground(1,1,1);
+    renderer->SetBackground2(0.5,0,0);
 
-
-    // Roll zu 90 Grad definieren, da Bild sonst falsch generiert wird
-    int roll=90;
 
     // Schleife über alle Kameraposen
     for (float x = xmin; x <= xmax; x += Rx) // Schleife über alle y-Werte
     {
         for (float y = ymin; y <= ymax; y += Ry) // Schleife über alle x-Werte
         {
-            for (float z= zmin; z <= zmax; z += Rz) // Schleife über alle z-Werte
+            for (float z = zmin; z < zmax; z += Rz) // Schleife über alle z-Werte
             {
-                for(int pitch = -50; pitch < -11; pitch += 20) // Schleife über alle pitch-Werte
+                for(int yaw = yawmin; yaw < yawmax; yaw += Ryaw) // Schleife über alle yaw-Werte (yaw muss zuerst definiert werden, da manchmal nicht alle pitch-Posen durchlaufen werden sollen (Decke eher uninteressant))
                 {
-                    for(int yaw = 0; yaw < 360; yaw += 10) // Schleife über alle yaw-Werte
+                    for(int pitch = pitchmin; pitch < pitchmax; pitch += Rpitch) // Schleife über alle pitch-Werte
                     {
 
                         vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
@@ -148,7 +151,7 @@ int main (int argc, char *argv[])
                         windowToImageFilter->SetInput(renderWindow);
                         windowToImageFilter->Update();
 
-                        // NACHHER AUSKOMMENTIEREN SONST BILD FÜR JEDE POSE!!!
+                        // AUSKOMMENTIEREN SONST BILD FÜR JEDE POSE!!!
                         // Abspeichern des Bildes in der aktuellen Pose
                         //                    std::stringstream ss;
                         //                    ss << "pos_"<< x << "_" << y << "_" << pitch << "_" << yaw << ".png";
@@ -184,13 +187,13 @@ int main (int argc, char *argv[])
                         cv::cvtColor(dst,cdst,CV_GRAY2BGR);// AUSKOMMENTIEREN
 
 
+                        // Im folgenden Abschnitt: Linienerkennung und Umrechnung der Parameter sowie Filterung und Abspeicherung
                         cv::Point Mittelpunkt;
                         float Gegenkathete, Ankathete;
                         int Theta, laenge;
 
                         // Pose in Textdatei schreiben
                         myfile << x << " " << y << " " << z << " " << roll << " " << pitch << " " << yaw << std::endl;
-
 
                         // HoughLinesP-Algorithmus speichert Parameter in Vektor "lines"
                         std::vector<Vec4i> lines;
@@ -205,9 +208,6 @@ int main (int argc, char *argv[])
                         {
                             Vec4i l = lines[i];
 
-                            // Aktualle Linie in "cdst" malen (Nur zur Visualisierung)
-                            line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 1, CV_AA);
-
                             // Linienparameter von x1,y1 und x2,y2 in Theta, x-Mittelpunkt, y-Mittelpunkt und Länge umrechnen
                             Mittelpunkt.x=cvRound((l[0]+l[2])/2);
                             Mittelpunkt.y=cvRound((l[1]+l[3])/2);
@@ -216,8 +216,19 @@ int main (int argc, char *argv[])
                             Theta=cvRound(atan(Gegenkathete/Ankathete)*360/(2*CV_PI));
                             laenge=cvRound(sqrt(Ankathete*Ankathete+Gegenkathete*Gegenkathete));
 
+                            // VISUALISIERUNG DER LINIEN
+                            // Aktuelle Linie in "cdst" malen (Nur zur Visualisierung)
+                            line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 1, CV_AA);
                             // Mittelpunkt der aktuellen Linie in "cdst" malen (nur zur Visualisierung)
                             cv::circle(cdst,Mittelpunkt,5,Scalar(0,255,0),2,CV_AA);
+                            // Endpunkte in cdst malen
+                            cv::Point Endpunkt1, Endpunkt2;
+                            Endpunkt1.x = l[0];
+                            Endpunkt1.y = l[1];
+                            Endpunkt2.x = l[2];
+                            Endpunkt2.y = l[3];
+                            cv::circle(cdst,Endpunkt1,5,Scalar(255,0,0),2,CV_AA);
+                            cv::circle(cdst,Endpunkt2,5,Scalar(255,0,0),2,CV_AA);
 
                             // Ausgabe der Endpunkte der aktuellen Linie
                             std::cout<<l[0]<<","<<l[1]<<","<<l[2]<<","<<l[3]<<std::endl;
@@ -337,8 +348,8 @@ int main (int argc, char *argv[])
 
                                 // Wenn nur jeweils linke Endpunkte übereinstimmen (Überlappung)
                                 //
-                                // o----------------------------o Liniennummer-1
-                                // o---------------o Liniennummer
+                                // o----------------------------o Liniennummer
+                                // o---------------o Liniennummer+1
                                 else if(sqrt(pow(LinesSortiert[Liniennummer][0] - LinesSortiert[Liniennummer+1][0] , 2) + pow(LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer+1][1] , 2) ) <= 10)
                                 {
                                     // Linker Endpunkt der neuen Linie kann schon berechnet werden (gemittelt)
@@ -443,7 +454,7 @@ int main (int argc, char *argv[])
                                     Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
                                 }
 
-                                // Wenn rechter Eckpunkt der aktuellen Linie [Liniennummer] mit den linken Endpunkt der vorigen Linie [Liniennummer-1] übereinstimmt (Zusammenstückelung einer Kante aus mehreren Linien)
+                                // Wenn rechter Eckpunkt der aktuellen Linie [Liniennummer] mit den linken Endpunkt der folgenden Linie [Liniennummer+1] übereinstimmt (Zusammenstückelung einer Kante aus mehreren Linien)
                                 //
                                 // Liniennummer+1           Liniennummer
                                 // o--------------------o o-------------o
@@ -455,10 +466,10 @@ int main (int argc, char *argv[])
                                     LinesSortiert[Liniennummer+1][3] = LinesSortiert[Liniennummer][3]; // y2_neu = y2 der aktuellen Linie [Liniennummer]
 
                                     // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
-                                    int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer][0] + LinesSortiert[Liniennummer][2]) / 2 );
-                                    int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer][1] + LinesSortiert[Liniennummer][3]) / 2 );
-                                    float Gegenkath_neu = LinesSortiert[Liniennummer][1] - LinesSortiert[Liniennummer][3];
-                                    float Ankath_neu = LinesSortiert[Liniennummer][2] - LinesSortiert[Liniennummer][0];
+                                    int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer+1][0] + LinesSortiert[Liniennummer+1][2]) / 2 );
+                                    int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer+1][1] + LinesSortiert[Liniennummer+1][3]) / 2 );
+                                    float Gegenkath_neu = LinesSortiert[Liniennummer+1][1] - LinesSortiert[Liniennummer+1][3];
+                                    float Ankath_neu = LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer+1][0];
                                     int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
                                     int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
 
@@ -472,11 +483,83 @@ int main (int argc, char *argv[])
                                     Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
                                 }
                                 /*
-                // Jetzt nur noch: Linien überschneiden sich, aber kein Endpunkt liegt nahe am anderen
-                // o-------------------------o   aktuelle Linie
-                //              o------------------------------o   vorige Linie
+                // Jetzt: Linien überschneiden sich, aber kein Endpunkt liegt nahe am anderen
+                // Ao-------------------------oB   aktuelle Linie
+                //              Co------------------------------oD   folgende Linie
                 // Dazu: Ermittlung, ob rechter Punkt der aktuellen Linie geringen Abstand zur vorigen Linie hat und gleichzeitig linker Punkt der vorigen Linie geringen Abstand zur aktuellen Linie hat
 */
+
+                                // Schnittpunkt berechnen
+                                // else if: Schnittpunkt ist zwischen den Endpunkten (vom x-Wert her) UND: Abstand eines Endpunktes zu Schnittpunkt unter Schwellwert
+                                // => neue Endpunkte berechnen
+
+                                // Definition Schnittpunkt, Endpunkte A-D (A und B der aktuellen, C und D der folgenden Linie)
+                                float SPx,SPy;
+                                int Ax = LinesSortiert[Liniennummer][0];
+                                int Ay = LinesSortiert[Liniennummer][1];
+                                int Bx = LinesSortiert[Liniennummer][2];
+                                int By = LinesSortiert[Liniennummer][3];
+
+                                int Cx = LinesSortiert[Liniennummer+1][0];
+                                int Cy = LinesSortiert[Liniennummer+1][1];
+                                int Dx = LinesSortiert[Liniennummer+1][2];
+                                int Dy = LinesSortiert[Liniennummer+1][3];
+
+                                // Linien werden mit Stütz- und Richtungsvektor beschrieben; f = aktuelle Linie, g = folgende Linie, fnormal = Richtungsvektor normal zu f und Stützvektor=C
+                                // Alle folgenden Vektoren sind Transponiert:
+                                // f = (Ax; Bx) + u (Bx-Ax; By-Ay)
+                                // g = (Cx; Cy) + v (Dx-Cx; Dy-Cy)
+                                // fnormal = (Cx; Cy) + w (By-Ay; -(Bx-Ax))
+
+                                // Bestimmen von u:
+                                float u = (Cy-((Ax-Cx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
+                                // u in f einsetzen, um Schnittpunkt zu bestimmen
+                                SPx =  Ax + u * (Bx-Ax);
+                                SPy =  Ay + u * (By-Ay);
+
+                                // Distanz zwischen SP und C checken
+                                int Distanz1 = sqrt((SPx-Cx)*(SPx-Cx)+(SPy-Cy)*(SPy-Cy));
+
+                                else if(Distanz1<=10)
+                                {
+                                    LinesSortiert[Liniennummer+1][0] = Ax;
+                                    LinesSortiert[Liniennummer+1][1] = Ay;
+
+                                    if(Bx>Dx){
+                                        LinesSortiert[Liniennummer+1][2] = Bx;
+                                        LinesSortiert[Liniennummer+1][3] = By;
+                                    }
+
+
+                                    // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
+                                    int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer+1][0] + LinesSortiert[Liniennummer+1][2]) / 2 );
+                                    int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer+1][1] + LinesSortiert[Liniennummer+1][3]) / 2 );
+                                    float Gegenkath_neu = LinesSortiert[Liniennummer+1][1] - LinesSortiert[Liniennummer+1][3];
+                                    float Ankath_neu = LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer+1][0];
+                                    int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
+                                    int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
+
+                                    // Vektor "NachThetasortiert" mit neuer Linie aktualisieren für nächsten Schleifendurchlauf
+                                    NachThetaSortiert[Liniennummer+1][0] = Theta_neu;
+                                    NachThetaSortiert[Liniennummer+1][1] = Mittelp_x_neu;
+                                    NachThetaSortiert[Liniennummer+1][2] = Mittelp_y_neu;
+                                    NachThetaSortiert[Liniennummer+1][3] = laenge_neu;
+
+                                    // Neue Linie in "Linienfusioniert" schreiben
+                                    Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
+                                    }
+
+
+                                // Jetzt: Linien überschneiden sich, aber kein Endpunkt liegt nahe am anderen
+                                //               Ao-------------------------oB   aktuelle Linie
+                                // Co------------------------------oD   folgende Linie
+
+
+
+
+
+
+
 
 
                                 // Wenn Winkelbedingung erfüllt aber Linien trotzdem nicht fusioniert werden können (weil zu weit auseinander)
