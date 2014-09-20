@@ -489,12 +489,9 @@ int main (int argc, char *argv[])
                 // Dazu: Ermittlung, ob rechter Punkt der aktuellen Linie geringen Abstand zur vorigen Linie hat und gleichzeitig linker Punkt der vorigen Linie geringen Abstand zur aktuellen Linie hat
 */
 
-                                // Schnittpunkt berechnen
-                                // else if: Schnittpunkt ist zwischen den Endpunkten (vom x-Wert her) UND: Abstand eines Endpunktes zu Schnittpunkt unter Schwellwert
-                                // => neue Endpunkte berechnen
 
                                 // Definition Schnittpunkt, Endpunkte A-D (A und B der aktuellen, C und D der folgenden Linie)
-                                float SPx,SPy;
+                                float SPx,SPy,SP2x,Sp2y;
                                 int Ax = LinesSortiert[Liniennummer][0];
                                 int Ay = LinesSortiert[Liniennummer][1];
                                 int Bx = LinesSortiert[Liniennummer][2];
@@ -511,21 +508,26 @@ int main (int argc, char *argv[])
                                 // g = (Cx; Cy) + v (Dx-Cx; Dy-Cy)
                                 // fnormal = (Cx; Cy) + w (By-Ay; -(Bx-Ax))
 
-                                // Bestimmen von u:
+                                // Bestimmen von u (bzw. u2 für zweite Fallunterscheidung:
                                 float u = (Cy-((Ax-Cx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
+                                float u2 = (Dy-((Ax-Dx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
                                 // u in f einsetzen, um Schnittpunkt zu bestimmen
                                 SPx =  Ax + u * (Bx-Ax);
                                 SPy =  Ay + u * (By-Ay);
+                                SP2x = Ax + u2 * (Bx-Ax);
+                                SP2y = Ay + u2 * (By-Ay);
 
                                 // Distanz zwischen SP und C checken
-                                int Distanz1 = sqrt((SPx-Cx)*(SPx-Cx)+(SPy-Cy)*(SPy-Cy));
+                                float Distanz1 = sqrt((SPx-Cx)*(SPx-Cx)+(SPy-Cy)*(SPy-Cy));
+                                // Distanz zwischen SP2 und D checken
+                                float Distanz2 = sqrt((SPx-Dx)*(SPx-Dx)+(SPy-Dy)*(SPy-Dy));
 
-                                else if(Distanz1<=10)
+                                else if( Distanz1<=10 && SPx > Ax && SPx < Bx )
                                 {
                                     LinesSortiert[Liniennummer+1][0] = Ax;
                                     LinesSortiert[Liniennummer+1][1] = Ay;
 
-                                    if(Bx>Dx){
+                                    if( Bx > Dx ){
                                         LinesSortiert[Liniennummer+1][2] = Bx;
                                         LinesSortiert[Liniennummer+1][3] = By;
                                     }
@@ -547,17 +549,39 @@ int main (int argc, char *argv[])
 
                                     // Neue Linie in "Linienfusioniert" schreiben
                                     Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
-                                    }
+                                }
 
 
-                                // Jetzt: Linien überschneiden sich, aber kein Endpunkt liegt nahe am anderen
+                                // Gleicher Fall, nur aktuelle Linie jetzt weiter rechts
                                 //               Ao-------------------------oB   aktuelle Linie
                                 // Co------------------------------oD   folgende Linie
+                                else if( Distanz2 <= 10 && SP2x > Ax && SP2x < Bx )
+                                {
+                                    LinesSortiert[Liniennummer+1][0] = Cx;
+                                    LinesSortiert[Liniennummer+1][1] = Cy;
 
+                                    if( Bx > Dx ){
+                                        LinesSortiert[Liniennummer+1][2] = Bx;
+                                        LinesSortiert[Liniennummer+1][3] = By;
+                                    }
 
+                                    // Jetzt neues Theta, Mittelpunkte und Länge berechnen!
+                                    int Mittelp_x_neu = cvRound( (LinesSortiert[Liniennummer+1][0] + LinesSortiert[Liniennummer+1][2]) / 2 );
+                                    int Mittelp_y_neu = cvRound( (LinesSortiert[Liniennummer+1][1] + LinesSortiert[Liniennummer+1][3]) / 2 );
+                                    float Gegenkath_neu = LinesSortiert[Liniennummer+1][1] - LinesSortiert[Liniennummer+1][3];
+                                    float Ankath_neu = LinesSortiert[Liniennummer+1][2] - LinesSortiert[Liniennummer+1][0];
+                                    int Theta_neu = cvRound( atan(Gegenkath_neu/Ankath_neu)*360/(2*CV_PI) );
+                                    int laenge_neu = cvRound( sqrt(Ankath_neu*Ankath_neu + Gegenkath_neu*Gegenkath_neu) );
 
+                                    // Vektor "NachThetasortiert" mit neuer Linie aktualisieren für nächsten Schleifendurchlauf
+                                    NachThetaSortiert[Liniennummer+1][0] = Theta_neu;
+                                    NachThetaSortiert[Liniennummer+1][1] = Mittelp_x_neu;
+                                    NachThetaSortiert[Liniennummer+1][2] = Mittelp_y_neu;
+                                    NachThetaSortiert[Liniennummer+1][3] = laenge_neu;
 
-
+                                    // Neue Linie in "Linienfusioniert" schreiben
+                                    Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
+                                }
 
 
 
