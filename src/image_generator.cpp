@@ -70,18 +70,18 @@ int main (int argc, char *argv[])
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    if ( argc != 2 )
-    {
-        cout << "Required parameters: Filename" << endl;
-        return EXIT_FAILURE;
-    }
+//    if ( argc != 2 )
+//    {
+//        cout << "Required parameters: Filename" << endl;
+//        return EXIT_FAILURE;
+//    }
 
 
     // STL-Modell (mit neuem Koordinatensystem!) laden:
-    std::string inputFilename = argv[1];
+    //std::string inputFilename = argv[1]; // Wenn aus Terminal gestartet werden soll
     vtkSmartPointer<vtkSTLReader> reader =
             vtkSmartPointer<vtkSTLReader>::New();
-    reader->SetFileName(inputFilename.c_str());
+    reader->SetFileName("Arena_19_09.stl");// Wenn aus Terminal gestartet werden soll: inputFilename.c_str()
     reader->Update();
 
     // Textstream erzeugen
@@ -294,49 +294,43 @@ int main (int argc, char *argv[])
                         // Jetzt Vektor durchlaufen und nach Linien suchen, die sich aus mehreren Linien zusammensetzen
                         // Aktuelle Linie mit der nächsten auf Gemeinsamkeiten überprüfen
 
-
-
-
                         for(int Liniennummer = 0; Liniennummer < NachThetaSortiert.size(); Liniennummer++)
                         {
-
-
-
-                            //////////////////////////////////////////////////////////////
-                            // Definition verschiedener Variablen (für folgenden Fall:)
-                            // Ao----oB   aktuelle Linie
-                            // Co----------oD   folgende Linie
-                            // Definition Schnittpunkt, Endpunkte A-D (A und B der aktuellen, C und D der folgenden Linie)
-                            float SPx,SPy,SP2x,SP2y;
-                            int Ax = LinesSortiert[Liniennummer][0];
-                            int Ay = LinesSortiert[Liniennummer][1];
-                            int Bx = LinesSortiert[Liniennummer][2];
-                            int By = LinesSortiert[Liniennummer][3];
-
-                            int Cx = LinesSortiert[Liniennummer+1][0];
-                            int Cy = LinesSortiert[Liniennummer+1][1];
-                            int Dx = LinesSortiert[Liniennummer+1][2];
-                            int Dy = LinesSortiert[Liniennummer+1][3];
-
-                            // Bestimmen von u (bzw. u2 für zweite Fallunterscheidung:
-                            float u = (Cy-((Ax-Cx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
-                            float u2 = (Dy-((Ax-Dx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
-                            // u in f einsetzen, um Schnittpunkt zu bestimmen
-                            SPx =  Ax + u * (Bx-Ax);
-                            SPy =  Ay + u * (By-Ay);
-                            SP2x = Ax + u2 * (Bx-Ax);
-                            SP2y = Ay + u2 * (By-Ay);
-
-                            // Distanz zwischen SP und C checken
-                            float Distanz1 = sqrt((SPx-Cx)*(SPx-Cx)+(SPy-Cy)*(SPy-Cy));
-                            // Distanz zwischen SP2 und D checken
-                            float Distanz2 = sqrt((SPx-Dx)*(SPx-Dx)+(SPy-Dy)*(SPy-Dy));
-                            /////////////////////////////////////////////////////////////////////
-
 
                             // Wenn Theta der aktuellen Linie +-2° mit der vorigen Linie übereinstimmt: Prüfen, ob die beiden Linien zu einer "fusioniert" werden können
                             if(NachThetaSortiert[Liniennummer][0] <= ( (NachThetaSortiert[Liniennummer+1][0]) + 2) && NachThetaSortiert[Liniennummer][0] >= ( (NachThetaSortiert[Liniennummer+1][0]) - 2))
                             {
+
+                                //////////////////////////////////////////////////////////////
+                                // Definition verschiedener Variablen (für folgenden Fall:)
+                                // Ao----oB   aktuelle Linie
+                                // Co----------oD   folgende Linie
+                                // Definition Schnittpunkt, Endpunkte A-D (A und B der aktuellen, C und D der folgenden Linie)
+                                float SPx,SPy,SP2x,SP2y;
+                                float Ax = LinesSortiert[Liniennummer][0];
+                                float Ay = LinesSortiert[Liniennummer][1];
+                                float Bx = LinesSortiert[Liniennummer][2];
+                                float By = LinesSortiert[Liniennummer][3];
+
+                                float Cx = LinesSortiert[Liniennummer+1][0];
+                                float Cy = LinesSortiert[Liniennummer+1][1];
+                                float Dx = LinesSortiert[Liniennummer+1][2];
+                                float Dy = LinesSortiert[Liniennummer+1][3];
+
+                                // Bestimmen von u (bzw. u2 für zweite Fallunterscheidung:
+                                float u = (Cy-((Ax-Cx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
+                                float u2 = (Dy-((Ax-Dx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
+                                // u in f einsetzen, um Schnittpunkt zu bestimmen
+                                SPx =  Ax + u * (Bx-Ax);
+                                SPy =  Ay + u * (By-Ay);
+                                SP2x = Ax + u2 * (Bx-Ax);
+                                SP2y = Ay + u2 * (By-Ay);
+
+                                // Distanz zwischen SP und C checken
+                                float Distanz1 = sqrt((SPx-Cx)*(SPx-Cx)+(SPy-Cy)*(SPy-Cy));
+                                // Distanz zwischen SP2 und D checken
+                                float Distanz2 = sqrt((SPx-Dx)*(SPx-Dx)+(SPy-Dy)*(SPy-Dy));
+                                /////////////////////////////////////////////////////////////////////
 
 
                                 // Praktisch: HoughLinesP sortiert die Parameter so: x1,y1,x2,y2 wobei x1 das Ende mit kleinerem x-Wert (weiter links) ist
@@ -595,8 +589,6 @@ int main (int argc, char *argv[])
                                     // Neue Linie in "Linienfusioniert" schreiben
                                     Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
                                 }
-
-
 
 
                                 // Wenn Winkelbedingung erfüllt aber Linien trotzdem nicht fusioniert werden können (weil zu weit auseinander)
