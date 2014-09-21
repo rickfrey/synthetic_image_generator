@@ -307,8 +307,8 @@ int main (int argc, char *argv[])
                                 // Co----------oD   folgende Linie
                                 // Definition Schnittpunkt, Endpunkte A-D (A und B der aktuellen, C und D der folgenden Linie)
                                 float SPx,SPy,SP2x,SP2y;
-                                float Ax = LinesSortiert[Liniennummer][0];
-                                float Ay = LinesSortiert[Liniennummer][1];
+                                float Ax = LinesSortiert[Liniennummer][0]+0.001;
+                                float Ay = LinesSortiert[Liniennummer][1]+0.001;
                                 float Bx = LinesSortiert[Liniennummer][2];
                                 float By = LinesSortiert[Liniennummer][3];
 
@@ -317,9 +317,9 @@ int main (int argc, char *argv[])
                                 float Dx = LinesSortiert[Liniennummer+1][2];
                                 float Dy = LinesSortiert[Liniennummer+1][3];
 
-                                // Bestimmen von u (bzw. u2 für zweite Fallunterscheidung:
-                                float u = (Cy-((Ax-Cx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
-                                float u2 = (Dy-((Ax-Dx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
+                                // Bestimmen von u (bzw. u2) für zweite Fallunterscheidung:
+                                float u = (Cy-Bx + (Bx-Ax)*(Ax-Cx)/(Ay-By))/(By-Ay-(Bx-Ax)*(Bx-Ax)/(Ay-By));
+                                float u2 = (Dy-Bx + (Bx-Ax)*(Ax-Dx)/(Ay-By))/(By-Ay-(Bx-Ax)*(Bx-Ax)/(Ay-By)); // Cx und Cy durch Dx und Dy ersetzen
                                 // u in f einsetzen, um Schnittpunkt zu bestimmen
                                 SPx =  Ax + u * (Bx-Ax);
                                 SPy =  Ay + u * (By-Ay);
@@ -327,9 +327,9 @@ int main (int argc, char *argv[])
                                 SP2y = Ay + u2 * (By-Ay);
 
                                 // Distanz zwischen SP und C checken
-                                float Distanz1 = sqrt((SPx-Cx)*(SPx-Cx)+(SPy-Cy)*(SPy-Cy));
+                                float Distanz1 = sqrt( (SPx-Cx)*(SPx-Cx) + (SPy-Cy)*(SPy-Cy) );
                                 // Distanz zwischen SP2 und D checken
-                                float Distanz2 = sqrt((SPx-Dx)*(SPx-Dx)+(SPy-Dy)*(SPy-Dy));
+                                float Distanz2 = sqrt( (SPx-Dx)*(SPx-Dx) + (SPy-Dy)*(SPy-Dy) );
                                 /////////////////////////////////////////////////////////////////////
 
 
