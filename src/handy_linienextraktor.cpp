@@ -15,9 +15,9 @@ int main( int argc, char** argv )
     Mat Handybild_original, Handybild, dst, cdst;
 
     // Handybild einlesen
-    Handybild_original = imread("TEST_OPENCV.jpg", CV_LOAD_IMAGE_COLOR);
+    Handybild_original = imread("A1_bearbeitet.JPG", CV_LOAD_IMAGE_COLOR);
 
-    // Bildgröße um Faktor 0.5 verringern
+    // Bildgröße um Faktor x verringern
     resize(Handybild_original, Handybild, Size(), 1.0,1.0);
 
     // Auf ungültigen Input checken
@@ -28,8 +28,8 @@ int main( int argc, char** argv )
     }
 
     // Parameter für Canny definieren
-    int threshold1 = 60;
-    int threshold2 = 40;
+    int threshold1 = 500;// vorher 60
+    int threshold2 = 70;// vorher 40
 
     // Trackbars für die beiden Parameter erzeugen
     //cv::createTrackbar("Canny1","Binär",&threshold1,100,NULL);
@@ -51,7 +51,7 @@ int main( int argc, char** argv )
     cv::cvtColor(dst,cdst,CV_GRAY2BGR);
 
     // HoughLinesP bestimmt die Linienparameter x1,y1,x2 und y2 und speichert sie in "lines" ab
-    HoughLinesP(dst, lines, 1, CV_PI/360, 40, 15, 50 );
+    HoughLinesP(dst, lines, 1, CV_PI/1000, 40, 15, 50 );
 
     // Schleife über alle Linien
     for( size_t i = 0; i < lines.size(); i++ )
@@ -94,7 +94,7 @@ int main( int argc, char** argv )
 
     // Stream erzeugen, um eine Textdatei schreiben zu können
     std::ofstream myfile;
-    myfile.open("Handylinien.txt");
+    myfile.open("A1.txt");
 
     // Neue Parameter, in welche die vorigen Parameter (Start- und Endpunkt) umgerechnet werden sollen
     cv::Point Mittelpunkt;
@@ -184,17 +184,18 @@ int main( int argc, char** argv )
     // Aktuelle Linie mit der nächsten auf Gemeinsamkeiten überprüfen
     for(int Liniennummer = 0; Liniennummer < NachThetaSortiert.size(); Liniennummer++)
     {
-        // Wenn Theta der aktuellen Linie +-2° mit der vorigen Linie übereinstimmt: Prüfen, ob die beiden Linien zu einer "fusioniert" werden können
-        if(NachThetaSortiert[Liniennummer][0] <= ( (NachThetaSortiert[Liniennummer+1][0]) + 2) && NachThetaSortiert[Liniennummer][0] >= ( (NachThetaSortiert[Liniennummer+1][0]) - 2))
+        // Wenn Theta der aktuellen Linie +-1° mit der vorigen Linie übereinstimmt: Prüfen, ob die beiden Linien zu einer "fusioniert" werden können
+        if(NachThetaSortiert[Liniennummer][0] <= ( (NachThetaSortiert[Liniennummer+1][0]) + 1) && NachThetaSortiert[Liniennummer][0] >= ( (NachThetaSortiert[Liniennummer+1][0]) - 1))
         {
+
             //////////////////////////////////////////////////////////////
             // Definition verschiedener Variablen (für folgenden Fall:)
             // Ao----oB   aktuelle Linie
             // Co----------oD   folgende Linie
             // Definition Schnittpunkt, Endpunkte A-D (A und B der aktuellen, C und D der folgenden Linie)
             float SPx,SPy,SP2x,SP2y;
-            float Ax = LinesSortiert[Liniennummer][0];
-            float Ay = LinesSortiert[Liniennummer][1];
+            float Ax = LinesSortiert[Liniennummer][0]+0.001;
+            float Ay = LinesSortiert[Liniennummer][1]+0.001;
             float Bx = LinesSortiert[Liniennummer][2];
             float By = LinesSortiert[Liniennummer][3];
 
@@ -203,9 +204,9 @@ int main( int argc, char** argv )
             float Dx = LinesSortiert[Liniennummer+1][2];
             float Dy = LinesSortiert[Liniennummer+1][3];
 
-            // Bestimmen von u (bzw. u2 für zweite Fallunterscheidung:
-            float u = (Cy-((Ax-Cx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
-            float u2 = (Dy-((Ax-Dx)/(By-Ay))*(Bx-Ax)-Ay) / ((By-Ay)/((Bx-Ax)*(Bx-Ax) + (By-Ay)*(By-Ay)));
+            // Bestimmen von u (bzw. u2) für zweite Fallunterscheidung:
+            float u = (Cy-Bx + (Bx-Ax)*(Ax-Cx)/(Ay-By))/(By-Ay-(Bx-Ax)*(Bx-Ax)/(Ay-By));
+            float u2 = (Dy-Bx + (Bx-Ax)*(Ax-Dx)/(Ay-By))/(By-Ay-(Bx-Ax)*(Bx-Ax)/(Ay-By)); // Cx und Cy durch Dx und Dy ersetzen
             // u in f einsetzen, um Schnittpunkt zu bestimmen
             SPx =  Ax + u * (Bx-Ax);
             SPy =  Ay + u * (By-Ay);
@@ -213,9 +214,9 @@ int main( int argc, char** argv )
             SP2y = Ay + u2 * (By-Ay);
 
             // Distanz zwischen SP und C checken
-            float Distanz1 = sqrt((SPx-Cx)*(SPx-Cx)+(SPy-Cy)*(SPy-Cy));
+            float Distanz1 = sqrt( (SPx-Cx)*(SPx-Cx) + (SPy-Cy)*(SPy-Cy) );
             // Distanz zwischen SP2 und D checken
-            float Distanz2 = sqrt((SPx-Dx)*(SPx-Dx)+(SPy-Dy)*(SPy-Dy));
+            float Distanz2 = sqrt( (SPx-Dx)*(SPx-Dx) + (SPy-Dy)*(SPy-Dy) );
             /////////////////////////////////////////////////////////////////////
 
 

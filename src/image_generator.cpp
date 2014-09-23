@@ -43,21 +43,21 @@ int main (int argc, char *argv[])
     //	PARAMETER DEFINIEREN (alle Angaben in [m] bzw. [°])
 
     // Begrenzung der Kameraposen in x-,y- und z-Richtung:
-    float xmin = 0.5 , xmax = 0.51 ;// vorher: 0.2,3.8
-    float ymin = 0.3 , ymax = 0.31 ;// vorher: 0.2,3.4
-    float zmin = 0.15 , zmax = 0.16 ;
+    float xmin = 0.5 , xmax = 2.7 ;// vorher: 0.2,3.8
+    float ymin = 0.5 , ymax = 3 ;// vorher: 0.2,3.4
+    float zmin = 1.5 , zmax = 1.5 ;
 
     // Begrenzung der Kameraposen in pitch- und yaw-Richtung
 
-    int pitchmin  = 0 , pitchmax = 1 ;// vorher: -50,0
-    int yawmin = 30 , yawmax = 31 ;//vorher 0,360
+    int pitchmin  = -40 , pitchmax = -20 ;// vorher: -50,0
+    int yawmin = 0 , yawmax = 359 ;//vorher 0,360
 
     // Auflösung der Kameraposen (translatorisch u. rotatorisch)
     float Rx = 0.1 , Ry = 0.1 , Rz = 0.1 ;
     int Rpitch = 5 , Ryaw = 5 ; // um die x-Achse (roll) wird nicht rotiert, da das Handy entweder senkrecht oder waagerecht gehalten werden soll
 
     // Bildwinkel (iPhone 3GS: FOV = 49.9; Samsung Galaxy: FOV = 63.1)
-    float FOV = 70 ;
+    float FOV = 49.9 ;
 
     // Auflösung der Handkamerabilder (Pixel). Hier kann auch das Seitenverhältnis (bzw. senkrechter, waagerechter Kamerasensor) verändert werden
     int Rxi = 2048 , Reta = 1536 ;
@@ -116,11 +116,11 @@ int main (int argc, char *argv[])
     {
         for (float y = ymin; y <= ymax; y += Ry) // Schleife über alle x-Werte
         {
-            for (float z = zmin; z < zmax; z += Rz) // Schleife über alle z-Werte
+            for (float z = zmin; z <= zmax; z += Rz) // Schleife über alle z-Werte
             {
-                for(int yaw = yawmin; yaw < yawmax; yaw += Ryaw) // Schleife über alle yaw-Werte (yaw muss zuerst definiert werden, da manchmal nicht alle pitch-Posen durchlaufen werden sollen (Decke eher uninteressant))
+                for(int yaw = yawmin; yaw <= yawmax; yaw += Ryaw) // Schleife über alle yaw-Werte (yaw muss zuerst definiert werden, da manchmal nicht alle pitch-Posen durchlaufen werden sollen (Decke eher uninteressant))
                 {
-                    for(int pitch = pitchmin; pitch < pitchmax; pitch += Rpitch) // Schleife über alle pitch-Werte
+                    for(int pitch = pitchmin; pitch <= pitchmax; pitch += Rpitch) // Schleife über alle pitch-Werte
                     {
 
                         vtkSmartPointer<vtkWindowToImageFilter> windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
@@ -153,11 +153,11 @@ int main (int argc, char *argv[])
 
                         // AUSKOMMENTIEREN SONST BILD FÜR JEDE POSE!!!
                         // Abspeichern des Bildes in der aktuellen Pose
-                        //                    std::stringstream ss;
-                        //                    ss << "pos_"<< x << "_" << y << "_" << pitch << "_" << yaw << ".png";
-                        //                    writer->SetFileName(ss.str().c_str());//aus stringstream wird string und anschl. constant string gemacht
-                        //                    writer->SetInputConnection(windowToImageFilter->GetOutputPort());
-                        //                    writer->Write();
+//                                            std::stringstream ss;
+//                                            ss << "pos_"<< x << "_" << y << "_" << pitch << "_" << yaw << ".png";
+//                                            writer->SetFileName(ss.str().c_str());//aus stringstream wird string und anschl. constant string gemacht
+//                                            writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+//                                            writer->Write();
 
                         /////Convert VTKImageData to iplimage (OpenCV)/////////////////////////////////////
                         // http://vtk.1045678.n5.nabble.com/From-vtkImageData-to-Iplimage-OpenCV-td5716020.html
@@ -174,7 +174,7 @@ int main (int argc, char *argv[])
                         //Flip because of different origins between vtk and OpenCV
                         cv::flip(openCVImage,openCVImage,0);
                         //cv::imshow("Testbild",openCVImage);
-                        cv::imwrite("TEST_OPENCV.jpg",openCVImage);// AUSKOMMENTIEREN!
+//                        cv::imwrite("TEST_OPENCV.jpg",openCVImage);// AUSKOMMENTIEREN!
 
                         //Kantendetektion
                         cv::Mat dst, blured_pic, cdst;
@@ -183,8 +183,8 @@ int main (int argc, char *argv[])
 
                         // NACHHER AUSKOMMENTIEREN SONST BILD FÜR JEDE POSE!!!
                         // Binäres Bild speichern:
-                        cv::imwrite("Kantenbild.jpg",dst);// AUSKOMMENTIEREN
-                        cv::cvtColor(dst,cdst,CV_GRAY2BGR);// AUSKOMMENTIEREN
+//                        cv::imwrite("Kantenbild.jpg",dst);// AUSKOMMENTIEREN
+                        cv::cvtColor(dst,cdst,CV_GRAY2BGR);
 
 
                         // Im folgenden Abschnitt: Linienerkennung und Umrechnung der Parameter sowie Filterung und Abspeicherung
@@ -197,7 +197,7 @@ int main (int argc, char *argv[])
 
                         // HoughLinesP-Algorithmus speichert Parameter in Vektor "lines"
                         std::vector<Vec4i> lines;
-                        HoughLinesP(dst, lines, 0.9, CV_PI/720, 90, 20, 50 );
+                        HoughLinesP(dst, lines, 1, CV_PI/1000, 40, 20, 50 );
 
                         // Vektoren, in den die umgerechneten Linienparameter (Theta in Thetavektor, übrige Parameter in umgerechneteParameter) gespeichert werden
                         std::vector<int> Thetavektor;
@@ -218,20 +218,20 @@ int main (int argc, char *argv[])
 
                             // VISUALISIERUNG DER LINIEN
                             // Aktuelle Linie in "cdst" malen (Nur zur Visualisierung)
-                            line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 1, CV_AA);
-                            // Mittelpunkt der aktuellen Linie in "cdst" malen (nur zur Visualisierung)
-                            cv::circle(cdst,Mittelpunkt,5,Scalar(0,255,0),2,CV_AA);
-                            // Endpunkte in cdst malen
-                            cv::Point Endpunkt1, Endpunkt2;
-                            Endpunkt1.x = l[0];
-                            Endpunkt1.y = l[1];
-                            Endpunkt2.x = l[2];
-                            Endpunkt2.y = l[3];
-                            cv::circle(cdst,Endpunkt1,5,Scalar(255,0,0),2,CV_AA);
-                            cv::circle(cdst,Endpunkt2,5,Scalar(255,0,0),2,CV_AA);
+//                            line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 1, CV_AA);
+//                            // Mittelpunkt der aktuellen Linie in "cdst" malen (nur zur Visualisierung)
+//                            cv::circle(cdst,Mittelpunkt,5,Scalar(0,255,0),2,CV_AA);
+//                            // Endpunkte in cdst malen
+//                            cv::Point Endpunkt1, Endpunkt2;
+//                            Endpunkt1.x = l[0];
+//                            Endpunkt1.y = l[1];
+//                            Endpunkt2.x = l[2];
+//                            Endpunkt2.y = l[3];
+//                            cv::circle(cdst,Endpunkt1,5,Scalar(255,0,0),2,CV_AA);
+//                            cv::circle(cdst,Endpunkt2,5,Scalar(255,0,0),2,CV_AA);
 
-                            // Ausgabe der Endpunkte der aktuellen Linie
-                            std::cout<<l[0]<<","<<l[1]<<","<<l[2]<<","<<l[3]<<std::endl;
+//                            // Ausgabe der Endpunkte der aktuellen Linie
+//                            std::cout<<l[0]<<","<<l[1]<<","<<l[2]<<","<<l[3]<<std::endl;
 
 
                             // 1. Neuen Vektor std::vector<Vec4i> umgerechneteParameter initialisieren, in den nacheinander alle Linienparameter geschrieben werden (Theta zuerst)
@@ -297,8 +297,8 @@ int main (int argc, char *argv[])
                         for(int Liniennummer = 0; Liniennummer < NachThetaSortiert.size(); Liniennummer++)
                         {
 
-                            // Wenn Theta der aktuellen Linie +-2° mit der vorigen Linie übereinstimmt: Prüfen, ob die beiden Linien zu einer "fusioniert" werden können
-                            if(NachThetaSortiert[Liniennummer][0] <= ( (NachThetaSortiert[Liniennummer+1][0]) + 2) && NachThetaSortiert[Liniennummer][0] >= ( (NachThetaSortiert[Liniennummer+1][0]) - 2))
+                            // Wenn Theta der aktuellen Linie +-1° mit der vorigen Linie übereinstimmt: Prüfen, ob die beiden Linien zu einer "fusioniert" werden können
+                            if(NachThetaSortiert[Liniennummer][0] <= ( (NachThetaSortiert[Liniennummer+1][0]) + 1) && NachThetaSortiert[Liniennummer][0] >= ( (NachThetaSortiert[Liniennummer+1][0]) - 1))
                             {
 
                                 //////////////////////////////////////////////////////////////
@@ -370,10 +370,10 @@ int main (int argc, char *argv[])
                                     NachThetaSortiert[Liniennummer+1][2] = Mittelp_y_neu;
                                     NachThetaSortiert[Liniennummer+1][3] = laenge_neu;
 
-                                    cout << "Theta_neu= " << Theta_neu << endl;
-                                    cout << "Ankathete_neu= " << Ankath_neu << endl;
-                                    cout << "Gegenkath_neu= " << Gegenkath_neu << endl;
-                                    cout << "Test: Länge der 3. Linie= " << NachThetaSortiert[2][3] << endl;
+//                                    cout << "Theta_neu= " << Theta_neu << endl;
+//                                    cout << "Ankathete_neu= " << Ankath_neu << endl;
+//                                    cout << "Gegenkath_neu= " << Gegenkath_neu << endl;
+//                                    cout << "Test: Länge der 3. Linie= " << NachThetaSortiert[2][3] << endl;
 
                                     // Neue Linie in Vektor "Linienfusioniert" schreiben
                                     Linienfusioniert.push_back(Vec4i( Theta_neu , Mittelp_x_neu , Mittelp_y_neu , laenge_neu ));
@@ -651,7 +651,7 @@ int main (int argc, char *argv[])
                         }
 
                         // Zur Stichprobenkontrolle (vor vollständigem Durchlauf des Raumes) können Bilder aus den vorgegebenen Posen abgespeichert werden
-                        cv::imwrite("Lines.jpg",cdst);// DANACH AUSKOMMENTIEREN
+//                        cv::imwrite("Lines.jpg",cdst);// DANACH AUSKOMMENTIEREN
 
 
                     }
