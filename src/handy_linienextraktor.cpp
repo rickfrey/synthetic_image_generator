@@ -28,8 +28,8 @@ int main( int argc, char** argv )
     }
 
     // Parameter für Canny definieren
-    int threshold1 = 500;// vorher 60
-    int threshold2 = 70;// vorher 40
+    int threshold1 = 60;// vorher 60
+    int threshold2 = 40;// vorher 40
 
     // Trackbars für die beiden Parameter erzeugen
     //cv::createTrackbar("Canny1","Binär",&threshold1,100,NULL);
