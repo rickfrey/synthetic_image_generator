@@ -43,14 +43,14 @@ int main (int argc, char *argv[])
     //	PARAMETER DEFINIEREN (alle Angaben in [m] bzw. [°])
 
     // Begrenzung der Kameraposen in x-,y- und z-Richtung:
-    float xmin = 0.5 , xmax = 2.7 ;// vorher: 0.2,3.8
-    float ymin = 0.5 , ymax = 3 ;// vorher: 0.2,3.4
+    float xmin = 2.6 , xmax = 2.6 ;// vorher: 0.2,3.8
+    float ymin = 3 , ymax = 3 ;// vorher: 0.2,3.4
     float zmin = 1.5 , zmax = 1.5 ;
 
     // Begrenzung der Kameraposen in pitch- und yaw-Richtung
 
-    int pitchmin  = -40 , pitchmax = -20 ;// vorher: -50,0
-    int yawmin = 0 , yawmax = 359 ;//vorher 0,360
+    int pitchmin  = -35 , pitchmax = -35 ;// vorher: -50,0
+    int yawmin = 335 , yawmax = 335 ;//vorher 0,360
 
     // Auflösung der Kameraposen (translatorisch u. rotatorisch)
     float Rx = 0.1 , Ry = 0.1 , Rz = 0.1 ;
