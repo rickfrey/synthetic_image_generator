@@ -44,13 +44,13 @@ int main (int argc, char *argv[])
 
     // Begrenzung der Kameraposen in x-,y- und z-Richtung:
     float xmin = 2.6 , xmax = 2.6 ;// vorher: 0.2,3.8
-    float ymin = 3 , ymax = 3 ;// vorher: 0.2,3.4
+    float ymin = 2.4 , ymax = 2.4 ;// vorher: 0.2,3.4
     float zmin = 1.5 , zmax = 1.5 ;
 
     // Begrenzung der Kameraposen in pitch- und yaw-Richtung
 
-    int pitchmin  = -35 , pitchmax = -35 ;// vorher: -50,0
-    int yawmin = 335 , yawmax = 335 ;//vorher 0,360
+    int pitchmin  = -40 , pitchmax = -40 ;// vorher: -50,0
+    int yawmin = 295 , yawmax = 295 ;//vorher 0,360
 
     // Auflösung der Kameraposen (translatorisch u. rotatorisch)
     float Rx = 0.1 , Ry = 0.1 , Rz = 0.1 ;
@@ -153,11 +153,11 @@ int main (int argc, char *argv[])
 
                         // AUSKOMMENTIEREN SONST BILD FÜR JEDE POSE!!!
                         // Abspeichern des Bildes in der aktuellen Pose
-//                                            std::stringstream ss;
-//                                            ss << "pos_"<< x << "_" << y << "_" << pitch << "_" << yaw << ".png";
-//                                            writer->SetFileName(ss.str().c_str());//aus stringstream wird string und anschl. constant string gemacht
-//                                            writer->SetInputConnection(windowToImageFilter->GetOutputPort());
-//                                            writer->Write();
+                                            std::stringstream ss;
+                                            ss << "pos_"<< x << "_" << y << "_" << pitch << "_" << yaw << ".png";
+                                            writer->SetFileName(ss.str().c_str());//aus stringstream wird string und anschl. constant string gemacht
+                                            writer->SetInputConnection(windowToImageFilter->GetOutputPort());
+                                            writer->Write();
 
                         /////Convert VTKImageData to iplimage (OpenCV)/////////////////////////////////////
                         // http://vtk.1045678.n5.nabble.com/From-vtkImageData-to-Iplimage-OpenCV-td5716020.html

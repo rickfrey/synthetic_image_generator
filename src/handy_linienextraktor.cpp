@@ -15,7 +15,7 @@ int main( int argc, char** argv )
     Mat Handybild_original, Handybild, dst, cdst;
 
     // Handybild einlesen
-    Handybild_original = imread("A1_bearbeitet.JPG", CV_LOAD_IMAGE_COLOR);
+    Handybild_original = imread("C1_bearbeitet.JPG", CV_LOAD_IMAGE_COLOR);
 
     // Bildgröße um Faktor x verringern
     resize(Handybild_original, Handybild, Size(), 1.0,1.0);
@@ -94,7 +94,7 @@ int main( int argc, char** argv )
 
     // Stream erzeugen, um eine Textdatei schreiben zu können
     std::ofstream myfile;
-    myfile.open("A1.txt");
+    myfile.open("C1.txt");
 
     // Neue Parameter, in welche die vorigen Parameter (Start- und Endpunkt) umgerechnet werden sollen
     cv::Point Mittelpunkt;
