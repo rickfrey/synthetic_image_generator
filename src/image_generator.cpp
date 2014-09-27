@@ -43,21 +43,21 @@ int main (int argc, char *argv[])
     //	PARAMETER DEFINIEREN (alle Angaben in [m] bzw. [°])
 
     // Begrenzung der Kameraposen in x-,y- und z-Richtung:
-    float xmin = 2.6 , xmax = 2.6 ;// vorher: 0.2,3.8
-    float ymin = 2.4 , ymax = 2.4 ;// vorher: 0.2,3.4
-    float zmin = 1.5 , zmax = 1.5 ;
+    float xmin = 0 , xmax = 0 ;// vorher: 0.2,3.8
+    float ymin = 0 , ymax = 0 ;// vorher: 0.2,3.4
+    float zmin = 0.5 , zmax = 0.5 ;
 
     // Begrenzung der Kameraposen in pitch- und yaw-Richtung
 
-    int pitchmin  = -40 , pitchmax = -40 ;// vorher: -50,0
-    int yawmin = 295 , yawmax = 295 ;//vorher 0,360
+    int pitchmin  = -20 , pitchmax = -20 ;// vorher: -50,0
+    int yawmin = 240 , yawmax = 240 ;//vorher 0,360
 
     // Auflösung der Kameraposen (translatorisch u. rotatorisch)
     float Rx = 0.1 , Ry = 0.1 , Rz = 0.1 ;
     int Rpitch = 5 , Ryaw = 5 ; // um die x-Achse (roll) wird nicht rotiert, da das Handy entweder senkrecht oder waagerecht gehalten werden soll
 
     // Bildwinkel (iPhone 3GS: FOV = 49.9; Samsung Galaxy: FOV = 63.1)
-    float FOV = 49.9 ;
+    float FOV = 100 ;
 
     // Auflösung der Handkamerabilder (Pixel). Hier kann auch das Seitenverhältnis (bzw. senkrechter, waagerechter Kamerasensor) verändert werden
     int Rxi = 2048 , Reta = 1536 ;
@@ -81,7 +81,7 @@ int main (int argc, char *argv[])
     //std::string inputFilename = argv[1]; // Wenn aus Terminal gestartet werden soll
     vtkSmartPointer<vtkSTLReader> reader =
             vtkSmartPointer<vtkSTLReader>::New();
-    reader->SetFileName("Arena_19_09.stl");// Wenn aus Terminal gestartet werden soll: inputFilename.c_str()
+    reader->SetFileName("dicht_vorbeigefahren_perfekt.stl");// Wenn aus Terminal gestartet werden soll: inputFilename.c_str()
     reader->Update();
 
     // Textstream erzeugen
@@ -108,7 +108,7 @@ int main (int argc, char *argv[])
     renderer->AddActor(actor);
     renderer->GradientBackgroundOn();
     renderer->SetBackground(1,1,1);
-    renderer->SetBackground2(0.5,0,0);
+    renderer->SetBackground2(0,0,0.5);
 
 
     // Schleife über alle Kameraposen
@@ -218,25 +218,22 @@ int main (int argc, char *argv[])
 
                             // VISUALISIERUNG DER LINIEN
                             // Aktuelle Linie in "cdst" malen (Nur zur Visualisierung)
-//                            line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 1, CV_AA);
-//                            // Mittelpunkt der aktuellen Linie in "cdst" malen (nur zur Visualisierung)
-//                            cv::circle(cdst,Mittelpunkt,5,Scalar(0,255,0),2,CV_AA);
-//                            // Endpunkte in cdst malen
-//                            cv::Point Endpunkt1, Endpunkt2;
-//                            Endpunkt1.x = l[0];
-//                            Endpunkt1.y = l[1];
-//                            Endpunkt2.x = l[2];
-//                            Endpunkt2.y = l[3];
-//                            cv::circle(cdst,Endpunkt1,5,Scalar(255,0,0),2,CV_AA);
-//                            cv::circle(cdst,Endpunkt2,5,Scalar(255,0,0),2,CV_AA);
+                            line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 1, CV_AA);
+                            // Mittelpunkt der aktuellen Linie in "cdst" malen (nur zur Visualisierung)
+                            cv::circle(cdst,Mittelpunkt,5,Scalar(0,255,0),2,CV_AA);
+                            // Endpunkte in cdst malen
+                            cv::Point Endpunkt1, Endpunkt2;
+                            Endpunkt1.x = l[0];
+                            Endpunkt1.y = l[1];
+                            Endpunkt2.x = l[2];
+                            Endpunkt2.y = l[3];
+                            cv::circle(cdst,Endpunkt1,5,Scalar(255,0,0),2,CV_AA);
+                            cv::circle(cdst,Endpunkt2,5,Scalar(255,0,0),2,CV_AA);
 
-//                            // Ausgabe der Endpunkte der aktuellen Linie
-//                            std::cout<<l[0]<<","<<l[1]<<","<<l[2]<<","<<l[3]<<std::endl;
+                            // Ausgabe der Endpunkte der aktuellen Linie
+                            std::cout<<l[0]<<","<<l[1]<<","<<l[2]<<","<<l[3]<<std::endl;
 
 
-                            // 1. Neuen Vektor std::vector<Vec4i> umgerechneteParameter initialisieren, in den nacheinander alle Linienparameter geschrieben werden (Theta zuerst)
-                            // 2. In Vektor nach kleinstem Thetawert suchen -> Zugehörige Parameter in Textdatei schreiben und die entsprechende Zeile im Vektor löschen
-                            // 3. so lange wie noch Werte => Im neuen Vektor müssten jetzt die Parameter aufsteigend nach Theta sortiert sein
 
                             // Thetawert für aktuelle Linie wird in "Thetavektor" geschrieben, andere Parameter in "umgerechneteParameter"
                             // Das Ganze dient dazu, die Linien aufsteigend nach Theta zu sortieren
@@ -651,7 +648,7 @@ int main (int argc, char *argv[])
                         }
 
                         // Zur Stichprobenkontrolle (vor vollständigem Durchlauf des Raumes) können Bilder aus den vorgegebenen Posen abgespeichert werden
-//                        cv::imwrite("Lines.jpg",cdst);// DANACH AUSKOMMENTIEREN
+                        cv::imwrite("Lines.jpg",cdst);// DANACH AUSKOMMENTIEREN
 
 
                     }

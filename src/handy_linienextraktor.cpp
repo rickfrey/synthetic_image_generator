@@ -15,7 +15,7 @@ int main( int argc, char** argv )
     Mat Handybild_original, Handybild, dst, cdst;
 
     // Handybild einlesen
-    Handybild_original = imread("C1_bearbeitet.JPG", CV_LOAD_IMAGE_COLOR);
+    Handybild_original = imread("C1(Kopie).png", CV_LOAD_IMAGE_COLOR);
 
     // Bildgröße um Faktor x verringern
     resize(Handybild_original, Handybild, Size(), 1.0,1.0);
@@ -119,14 +119,14 @@ int main( int argc, char** argv )
         laenge=cvRound(sqrt(Ankathete*Ankathete+Gegenkathete*Gegenkathete));
 
         // Mittelpunkte in cdst "malen"
-        cv::circle(cdst,Mittelpunkt,7,Scalar(0,255,0),1,CV_AA);
+        cv::circle(cdst,Mittelpunkt,7,Scalar(0,255,0),2,CV_AA);
 
         // Endpunkte in cdst "malen"
         cv::Point Endpunkt1, Endpunkt2;
         Endpunkt1.x=lines[i][0], Endpunkt1.y = lines[i][1];
         Endpunkt2.x = lines[i][2], Endpunkt2.y = lines[i][3];
-        cv::circle(cdst,Endpunkt1,5,Scalar(200,55,0),1,CV_AA);
-        cv::circle(cdst,Endpunkt2,5,Scalar(200,55,0),1,CV_AA);
+        cv::circle(cdst,Endpunkt1,5,Scalar(200,55,0),2,CV_AA);
+        cv::circle(cdst,Endpunkt2,5,Scalar(200,55,0),2,CV_AA);
 
         // Thetawert für aktuelle Linie wird in "Thetavektor" geschrieben, andere Parameter in "umgerechneteParameter"
         // Das Ganze dient dazu, die Linien aufsteigend nach Theta zu sortieren
