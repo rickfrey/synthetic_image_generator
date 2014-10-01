@@ -1,67 +1,29 @@
-#include <vtkPolyData.h>
+/************************************************************************************
+
+Programm rigidTransformation:
+
+- laden und visualisieren eines STL-Modells
+- mit dem Widget kann eine Transformation ausgeführt werden, sodass eine markante Stelle des Modells mit dem Koordinatensystem zusammfällt
+- durch Drücken einer beliebigen Taste wird das transformierte Modell unter "modelTransformed.stl" abgespeichert
+
+************************************************************************************/
+
 #include <vtkSTLReader.h>
 #include <vtkSmartPointer.h>
 #include <vtkPolyDataMapper.h>
-#include <vtkActor.h>
 #include <vtkRenderWindow.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindowInteractor.h>
 #include <vtkCamera.h>
-#include <vtkWindowToImageFilter.h>
-#include <vtkPNGWriter.h>
-
-//TEST
-#include "vtkRotationalExtrusionFilter.h"
-#include "vtkSphereSource.h"
 #include "vtkTransform.h"
-#include "vtkTransformFilter.h"
 #include "vtkTransformPolyDataFilter.h"
-#include "vtkWarpTo.h"
-#include "vtkAppendFilter.h"
-#include "vtkCellArray.h"
-#include "vtkConeSource.h"
-#include "vtkContourFilter.h"
-#include "vtkCubeSource.h"
-#include "vtkDataSetMapper.h"
-#include "vtkImplicitModeller.h"
-#include "vtkLODActor.h"
-#include "vtkPoints.h"
-#include "vtkPolyData.h"
-#include "vtkPolyDataMapper.h"
-#include "vtkRenderWindow.h"
-#include "vtkRenderWindowInteractor.h"
-#include "vtkRenderer.h"
-#include "vtkRotationalExtrusionFilter.h"
-#include "vtkSphereSource.h"
-#include "vtkTransform.h"
-#include "vtkTransformFilter.h"
-#include "vtkTransformPolyDataFilter.h"
-#include "vtkWarpTo.h"
-#include "vtkTextActor.h"
-#include "vtkTextProperty.h"
-
 #include "vtkAxesActor.h"
-#include <vtkPropPicker.h>
-#include <vtkObjectFactory.h>
-#include <vtkInteractorStyleTrackballCamera.h>
-
 #include <vtkAffineRepresentation2D.h>
 #include <vtkAffineWidget.h>
-#include <vtkAppendPolyData.h>
 #include <vtkCommand.h>
 #include <vtkInteractorStyleSwitch.h>
-#include <vtkPlaneSource.h>
 #include <vtkProperty.h>
-#include <vtkTransform.h>
 #include <vtkSTLWriter.h>
-
-#include <vtkPoints.h>
-#include <string>
-
-#include "vtkProperty.h"
-#include "vtkCamera.h"
-
-#include <vtkTransformPolyDataFilter.h>
 
 class vtkAffineCallback : public vtkCommand
 {
@@ -165,16 +127,14 @@ int main ( int argc, char *argv[] )
 
 
     vtkSmartPointer<vtkRenderer> renderer =
-            vtkSmartPointer<vtkRenderer>::New();    // A renderer is an object that controls the rendering process for objects. Rendering
-    // is the process of converting geometry, a specification for lights, and
-    // a camera view into an image
+            vtkSmartPointer<vtkRenderer>::New();
 
     renderer->SetActiveCamera(camera);
 
     vtkSmartPointer<vtkRenderWindow> renderWindow =
             vtkSmartPointer<vtkRenderWindow>::New(); // create a window for renderers to draw into
     renderWindow->AddRenderer(renderer);
-    renderWindow->SetSize(400,533); // Wenn auskommentiert wird die Karte perfekt auf den Bildschirm gerendert aber output.png ist schwarz?!?!?!?!?!!
+    //renderWindow->SetSize(400,533); // Wenn auskommentiert wird die Karte perfekt auf den Bildschirm gerendert aber output.png ist schwarz?!?!?!?!?!!
 
     vtkSmartPointer<vtkRenderWindowInteractor> renderWindowInteractor =
             vtkSmartPointer<vtkRenderWindowInteractor>::New(); // Ermöglicht Interaktion mit Maus/ Tastatur
@@ -240,9 +200,6 @@ int main ( int argc, char *argv[] )
 
     renderWindowInteractor->Start();
 
-    ////OFFSCREEN RENDERING: VTK_OPENGL_HAS_OSMESA im advanced-build-modus einschalten!
-    ////Fehlermeldung: "[VTK] GL/osmesa.h: no such file or directory"
-    //// http://tips.enderunix.org/view.php?id=2338&lang=en (in order to install vtk without getting this error, libosmesa-dev must be installed. for instance, issue "sudo apt-get install libosmesa6-dev" on ubuntu)
-    ///// TROTZDEM FEHLER!!!
+
     return EXIT_SUCCESS;
 }

@@ -1,11 +1,17 @@
+/***************************************************************************
+
+  Programm handy_linienextraktor:
+
+  - laden eines Bildes
+  - Extraktion und Filterung der Linien
+  - Abspeichern der Linien in einer Textdatei (Parameter: Theta, Mittelpunkt_x, Mittelpunkt_y, Länge)
+
+***************************************************************************/
+
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/core/core.hpp>
 #include <iostream>
 #include <fstream>
-#include <sstream>
-#include <string>
-#include <math.h>
 
 using namespace cv;
 using namespace std;
